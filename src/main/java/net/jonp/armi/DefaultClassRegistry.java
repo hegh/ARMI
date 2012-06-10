@@ -6,8 +6,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 /**
- * A default implementation of a ClassRegistry backed by a {@link HashBiMap}.
- * This follows the same synchronization semantics as {@link HashBiMap}.
+ * A default implementation of a ClassRegistry backed by a {@link HashBiMap} and
+ * the Runtime class loader. This follows the same synchronization semantics as
+ * {@link HashBiMap}.
  */
 public class DefaultClassRegistry
     implements ClassRegistry
@@ -108,16 +109,30 @@ public class DefaultClassRegistry
         return map.inverse().containsKey(clazz);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Look up the given class name in this registry.
      * 
-     * @see net.jonp.armi.ClassRegistry#lookup(java.lang.String)
+     * @param name The name of the class to look up.
+     * @return The class associated with that name, first checking the classes
+     *         registered with this registry, and then the Runtime class loader.
+     *         This allows for unregistered classes to be used, as long as they
+     *         come from the standard library.
      */
     @Override
     public Class<?> lookup(final String name)
         throws NotBoundException
     {
-        final Class<?> clazz = map.get(name);
+        Class<?> clazz = map.get(name);
+
+        if (null == clazz) {
+            // It may be a standard class
+            try {
+                clazz = Class.forName(name, true, Runtime.class.getClassLoader());
+            }
+            catch (final ClassNotFoundException cnfe) {
+                // Nope, not a standard class; ignore the exception
+            }
+        }
 
         if (null == clazz) {
             throw new NotBoundException(name);
@@ -135,7 +150,21 @@ public class DefaultClassRegistry
     public String reverseLookup(final Class<?> clazz)
         throws NotBoundException
     {
-        final String name = map.inverse().get(clazz);
+        String name = map.inverse().get(clazz);
+
+        if (null == name) {
+            // Not found? See if it is available in the standard library before
+            // throwing an exception
+            try {
+                Class.forName(clazz.getName(), false, Runtime.class.getClassLoader());
+
+                // Yup, it's a standard class, so use that name
+                name = clazz.getName();
+            }
+            catch (final ClassNotFoundException cnfe) {
+                // Nope, not a standard class; ignore the exception
+            }
+        }
 
         if (null == name) {
             throw new NotBoundException(clazz.getName());
