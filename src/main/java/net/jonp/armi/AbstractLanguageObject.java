@@ -1,5 +1,6 @@
 package net.jonp.armi;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.NotBoundException;
@@ -163,11 +164,11 @@ public abstract class AbstractLanguageObject
         else {
             buf.append(registry.reverseLookup(arg.getClass())).append(" (");
             final Field[] fields = arg.getClass().getFields();
+            AccessibleObject.setAccessible(fields, true);
+
             boolean first = true;
             for (final Field field : fields) {
-                if (((field.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC) &&
-                    ((field.getModifiers() & Modifier.FINAL) != Modifier.FINAL) &&
-                    ((field.getModifiers() & Modifier.TRANSIENT) != Modifier.TRANSIENT) &&
+                if (((field.getModifiers() & Modifier.TRANSIENT) != Modifier.TRANSIENT) &&
                     ((field.getModifiers() & Modifier.STATIC) != Modifier.STATIC)) {
 
                     if (first) {
@@ -181,8 +182,8 @@ public abstract class AbstractLanguageObject
                         buf.append(field.getName()).append(" = ").append(makeArgument(field.get(arg), registry));
                     }
                     catch (final IllegalAccessException iae) {
-                        // Should not happen, since we verified it is public
-                        throw new IllegalStateException("Public field " + field.getName() + " of " + arg.getClass().getName() +
+                        // Should not happen, since we disabled access checking
+                        throw new IllegalStateException("Field " + field.getName() + " of " + arg.getClass().getName() +
                                                         " is not accessible: " + iae.getMessage(), iae);
                     }
                 }

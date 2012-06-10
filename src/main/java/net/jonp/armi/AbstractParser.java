@@ -464,6 +464,7 @@ public abstract class AbstractParser
             for (final Map.Entry<String, Object> entry : fields.entrySet()) {
                 fieldName = entry.getKey();
                 final Field field = clazz.getField(fieldName);
+                field.setAccessible(true);
 
                 final Object value = entry.getValue();
                 field.set(instance, value);
