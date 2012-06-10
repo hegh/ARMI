@@ -45,7 +45,7 @@ public class CommandParserTest
 
         final String commandString = "call label \"label\" object.method (" + //
                                      "TestObject (field1 = \"val\\\\1\"," + //
-                                     " field2 = 12," + //
+                                     " field2 = 12L," + //
                                      " field3 = 13.45," + //
                                      " field4 = true," + //
                                      " field5 = null," + //
@@ -139,7 +139,7 @@ public class CommandParserTest
                                      " \"string\"," + //
                                      " TestObject (" + //
                                      "field1 = \"val\\\\1\"," + //
-                                     " field2 = 12," + //
+                                     " field2 = 12L," + //
                                      " field3 = 13.45," + //
                                      " field4 = true," + //
                                      " field5 = null," + //
@@ -160,7 +160,7 @@ public class CommandParserTest
         assertEquals(1, callCommand.getArguments().length);
 
         final Object[] args = (Object[])callCommand.getArguments()[0];
-        assertEquals(1L, args[0]);
+        assertEquals(1, args[0]);
         assertEquals("string", args[1]);
         assertEquals(getTestObject(), args[2]);
         assertEquals(commandString, callCommand.toStatement(registry));

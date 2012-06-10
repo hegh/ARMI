@@ -7,6 +7,7 @@ options {
 
 tokens {
 	ARRAYTOK = 'array';
+	BYTETOK = 'B';
 	CALLTOK = 'call';
 	COLLECTIONTOK = 'collection';
 	COMMA = ',';
@@ -14,15 +15,18 @@ tokens {
 	EQUALS = '=';
 	ERRORTOK = 'error';
 	FALSE = 'false';
+	FLOATTOK = 'F';
 	HELP = 'help';
 	LABELTOK = 'label';
 	LBRACKET = '[';
+	LONGTOK = 'L';
 	LPAREN = '(';
 	MAPTOK = 'map';
 	NIL = 'null';
 	RBRACKET = ']';
 	RESPONSETOK = 'response';
 	RPAREN = ')';
+	SHORTTOK = 'S';
 	TRUE = 'true';
 	UNSOLTOK = 'unsol';
 
@@ -30,20 +34,25 @@ tokens {
 	ARGS;
 	ARRAY;
 	BOOL;
+	BYTE;
 	CALL;
 	COLLECTION;
 	ELEMENTS;
 	ERROR;
 	FIELD;
 	FIELDS;
+	FLOAT;
 	IDENT;
 	LABEL;
+	LONG;
 	MAP;
 	MAPVAL;
 	MAPVALS;
 	NUM;
+	NUMDEFAULT;
 	OBJ;
 	RESPONSE;
+	SHORT;
 	STR;
 	UNSOLICITED;
 }
@@ -100,7 +109,15 @@ string
 	;
 
 number
-	: INTEGER (DOT INTEGER)? -> ^(NUM INTEGER (DOT INTEGER)?)
+	: INTEGER (DOT INTEGER)? numtype -> ^(NUM numtype INTEGER (DOT INTEGER)?)
+	;
+
+numtype
+	: BYTETOK  -> ^(BYTE)
+	| FLOATTOK -> ^(FLOAT)
+	| LONGTOK  -> ^(LONG)
+	| SHORTTOK -> ^(SHORT)
+	|          -> ^(NUMDEFAULT)
 	;
 
 bool

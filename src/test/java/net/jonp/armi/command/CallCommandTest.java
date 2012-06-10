@@ -30,7 +30,7 @@ public class CallCommandTest
 
         final String expected = "call label \"label\" name.of.method (\"arg1\", 2, 3.4, true," + //
                                 " TestObject (field1 = \"val\\\\1\"," + //
-                                " field2 = 12," + //
+                                " field2 = 12L," + //
                                 " field3 = 13.45," + //
                                 " field4 = true," + //
                                 " field5 = null," + //

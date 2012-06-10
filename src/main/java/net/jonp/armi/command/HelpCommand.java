@@ -35,7 +35,9 @@ public class HelpCommand
                        "\n" + //
                        "<value> can be:\n" + //
                        "  strings surrounded by \"\"\n" + //
-                       "  integers or floats\n" + //
+                       "  integers or floats with type postfix\n" + //
+                       "    B for Byte, S for Short, L for Long, F for Float" + //
+                       "    Integer and Double do not have type postfixes" + //
                        "  true or false\n" + //
                        "  array(<type>) [<element0>, <element1>, ...]\n" + //
                        "  collection(<type>) [<element0>, <element1>, ...]\n" + //

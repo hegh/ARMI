@@ -183,14 +183,29 @@ public abstract class AbstractParser
             throw new SyntaxException("Not a NUM: " + ast.getType());
         }
 
-        if (ast.getChildCount() == 1) {
-            return Long.valueOf(ast.getChild(0).getText());
+        if (ast.getChildCount() != 2 && ast.getChildCount() != 4) {
+            throw new SyntaxException("NUM childCount != 2 or 4: " + ast.getChildCount());
         }
-        else if (ast.getChildCount() == 3) {
-            return Double.valueOf(ast.getChild(0).getText() + "." + ast.getChild(2).getText());
-        }
-        else {
-            throw new SyntaxException("NUM childCount != 1 or 3: " + ast.getChildCount());
+
+        final CommonTree type = (CommonTree)ast.getChild(0);
+        switch (type.getType()) {
+            case ARMIParser.BYTE:
+                return Byte.valueOf(ast.getChild(1).getText());
+            case ARMIParser.FLOAT:
+                return Float.valueOf(ast.getChild(1).getText() + "." + ast.getChild(3).getText());
+            case ARMIParser.LONG:
+                return Long.valueOf(ast.getChild(1).getText());
+            case ARMIParser.SHORT:
+                return Short.valueOf(ast.getChild(1).getText());
+            case ARMIParser.NUMDEFAULT:
+                if (ast.getChildCount() == 2) {
+                    return Integer.valueOf(ast.getChild(1).getText());
+                }
+                else {
+                    return Double.valueOf(ast.getChild(1).getText() + "." + ast.getChild(3).getText());
+                }
+            default:
+                throw new IllegalStateException("Unexpected numeric type: " + type.getType());
         }
     }
 
@@ -268,11 +283,6 @@ public abstract class AbstractParser
         final String className = Conversion.arrayToString(ident, ".");
         final Class<?> clazz = findClass(className);
 
-        // FIXME: This collection may contain objects of a different type than
-        // what was originally serialized, as numbers will now be either Longs
-        // or Doubles, and not any smaller type
-        // We cannot convert, either, because we don't know what the original
-        // type was (due to generic type erasure)
         final Collection<Object> collection = Utils.cast(newObject(clazz));
         Collections.addAll(collection, elements);
 
@@ -320,11 +330,6 @@ public abstract class AbstractParser
                     throw new SyntaxException("MAPVAL childCount != 2: " + mapval.getChildCount());
                 }
 
-                // FIXME: This map may contain objects of a different type than
-                // what was originally serialized, as numbers will now be either
-                // Longs or Doubles, and not any smaller type
-                // We cannot convert, either, because we don't know what the
-                // original type was (due to generic type erasure)
                 final Object key = val((CommonTree)mapval.getChild(0));
                 final Object value = val((CommonTree)mapval.getChild(1));
                 map.put(key, value);
@@ -460,30 +465,7 @@ public abstract class AbstractParser
                 fieldName = entry.getKey();
                 final Field field = clazz.getField(fieldName);
 
-                // Do some quick conversions (long to int, short, or byte;
-                // double to float)
-                Object value = entry.getValue();
-                if (value instanceof Long) {
-                    final Long l = (Long)value;
-
-                    if (field.getType().isInstance(Integer.class) || field.getType().equals(int.class)) {
-                        value = Integer.valueOf(l.intValue());
-                    }
-                    else if (field.getType().isInstance(Short.class) || field.getType().equals(short.class)) {
-                        value = Short.valueOf(l.shortValue());
-                    }
-                    else if (field.getType().isInstance(Byte.class) || field.getType().equals(byte.class)) {
-                        value = Byte.valueOf(l.byteValue());
-                    }
-                }
-                else if (value instanceof Double) {
-                    final Double d = (Double)value;
-
-                    if (field.getType().isInstance(Float.class) || field.getType().equals(float.class)) {
-                        value = Float.valueOf(d.floatValue());
-                    }
-                }
-
+                final Object value = entry.getValue();
                 field.set(instance, value);
             }
         }
@@ -561,9 +543,7 @@ public abstract class AbstractParser
 
     /**
      * Given an array of objects of any type, convert it to an array of objects
-     * of a specific type. This expects all numeric values to be represented by
-     * either {@link Long} or {@link Double}, and not any smaller type; it will
-     * convert appropriately to the smaller types.
+     * of a specific type.
      * 
      * @param elements The array of objects to convert.
      * @param clazz The component class for the new array.
@@ -577,31 +557,7 @@ public abstract class AbstractParser
         }
 
         final Object[] objects = (Object[])Array.newInstance(clazz, elements.length);
-
-        final Class<?> type = clazz;
-        if (Integer.class.equals(type)) {
-            for (int i = 0; i < elements.length; i++) {
-                objects[i] = ((Number)elements[i]).intValue();
-            }
-        }
-        else if (Short.class.equals(type)) {
-            for (int i = 0; i < elements.length; i++) {
-                objects[i] = ((Number)elements[i]).shortValue();
-            }
-        }
-        else if (Byte.class.equals(type)) {
-            for (int i = 0; i < elements.length; i++) {
-                objects[i] = ((Number)elements[i]).byteValue();
-            }
-        }
-        else if (Float.class.equals(type)) {
-            for (int i = 0; i < elements.length; i++) {
-                objects[i] = ((Number)elements[i]).floatValue();
-            }
-        }
-        else {
-            System.arraycopy(elements, 0, objects, 0, elements.length);
-        }
+        System.arraycopy(elements, 0, objects, 0, elements.length);
 
         return objects;
     }

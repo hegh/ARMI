@@ -30,7 +30,7 @@ public class UnsolicitedResponseTest
 
         final String expected = "unsol (type.of.response," + //
                                 " TestObject (field1 = \"val1\"," + //
-                                " field2 = 12," + //
+                                " field2 = 12L," + //
                                 " field3 = 13.45," + //
                                 " field4 = true," + //
                                 " field5 = null," + //

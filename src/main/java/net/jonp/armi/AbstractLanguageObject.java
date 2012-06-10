@@ -75,6 +75,18 @@ public abstract class AbstractLanguageObject
         if (null == arg) {
             buf.append("null");
         }
+        else if (arg instanceof Byte) {
+            buf.append(arg.toString()).append("B");
+        }
+        else if (arg instanceof Float) {
+            buf.append(arg.toString()).append("F");
+        }
+        else if (arg instanceof Long) {
+            buf.append(arg.toString()).append("L");
+        }
+        else if (arg instanceof Short) {
+            buf.append(arg.toString()).append("S");
+        }
         else if (arg instanceof Number) {
             buf.append(arg.toString());
         }

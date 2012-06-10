@@ -42,7 +42,7 @@ public class ResponseParserTest
 
         final String commandString = "response label \"label\" (TestObject (" + //
                                      "field1 = \"val1\"," + //
-                                     " field2 = 12," + //
+                                     " field2 = 12L," + //
                                      " field3 = 13.45," + //
                                      " field4 = true," + //
                                      " field5 = array(java.lang.Object) [\"string\", 1, 2.3, true]," + //
@@ -143,7 +143,7 @@ public class ResponseParserTest
         testObject.field3 = 13.45;
         testObject.field4 = true;
         testObject.field5 = new Object[] {
-            "string", 1L, 2.3, true
+            "string", 1, 2.3, true
         };
         testObject.field6 = null;
         testObject.field7 = new Integer[] { };

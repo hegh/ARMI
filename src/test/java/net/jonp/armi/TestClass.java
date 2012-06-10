@@ -9,7 +9,7 @@ public class TestClass
     implements Cloneable
 {
     public String field1;
-    public int field2;
+    public long field2;
     public double field3;
     public boolean field4;
     public Object[] field5;
@@ -25,7 +25,7 @@ public class TestClass
     public int hashCode()
     {
         return (null == field1 ? 0 : field1.hashCode()) ^ //
-               field2 ^ //
+               Long.valueOf(field2).hashCode() ^ //
                Double.valueOf(field3).hashCode() ^ //
                Boolean.valueOf(field4).hashCode() ^ //
                (null == field5 ? 0 : field5.length) ^ //
