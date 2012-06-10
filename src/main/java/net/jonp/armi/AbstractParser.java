@@ -244,10 +244,13 @@ public abstract class AbstractParser
         }
 
         final Object[] elements = new Object[ast.getChildCount()];
-        int i = 0;
-        for (final Object childAST : ast.getChildren()) {
-            final CommonTree child = (CommonTree)childAST;
-            elements[i++] = val(child);
+        if (ast.getChildCount() > 0) {
+            // When 0, getChildren() returns null
+            int i = 0;
+            for (final Object childAST : ast.getChildren()) {
+                final CommonTree child = (CommonTree)childAST;
+                elements[i++] = val(child);
+            }
         }
 
         return elements;
