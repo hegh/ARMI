@@ -77,8 +77,11 @@ public abstract class AbstractLanguageObject
             buf.append(arg.toString());
         }
         else if (arg instanceof CharSequence) {
-            // FIXME: What about double-quotes?
-            buf.append("\"").append(arg.toString()).append("\"");
+            String s = arg.toString();
+            s = s.replaceAll("\\\\", "\\\\\\\\"); // Replace \ with \\
+            s = s.replaceAll("\"", "\\\"");
+
+            buf.append("\"").append(s).append("\"");
         }
         else if (arg instanceof Boolean) {
             buf.append(arg.toString());
