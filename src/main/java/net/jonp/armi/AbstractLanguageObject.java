@@ -77,7 +77,7 @@ public abstract class AbstractLanguageObject
             buf.append("null");
         }
         else if (arg instanceof Byte) {
-            buf.append(arg.toString()).append("B");
+            buf.append(arg.toString()).append("Y");
         }
         else if (arg instanceof Float) {
             buf.append(arg.toString()).append("F");
@@ -86,7 +86,7 @@ public abstract class AbstractLanguageObject
             buf.append(arg.toString()).append("L");
         }
         else if (arg instanceof Short) {
-            buf.append(arg.toString()).append("S");
+            buf.append(arg.toString()).append("T");
         }
         else if (arg instanceof Number) {
             buf.append(arg.toString());
@@ -94,7 +94,7 @@ public abstract class AbstractLanguageObject
         else if (arg instanceof CharSequence) {
             String s = arg.toString();
             s = s.replaceAll("\\\\", "\\\\\\\\"); // Replace \ with \\
-            s = s.replaceAll("\"", "\\\"");
+            s = s.replaceAll("\"", "\\\\\\\"");
 
             buf.append("\"").append(s).append("\"");
         }

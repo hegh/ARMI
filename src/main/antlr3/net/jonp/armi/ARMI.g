@@ -7,7 +7,7 @@ options {
 
 tokens {
 	ARRAYTOK = 'array';
-	BYTETOK = 'B';
+	BYTETOK = 'Y';
 	CALLTOK = 'call';
 	COLLECTIONTOK = 'collection';
 	COMMA = ',';
@@ -26,7 +26,7 @@ tokens {
 	RBRACKET = ']';
 	RESPONSETOK = 'response';
 	RPAREN = ')';
-	SHORTTOK = 'S';
+	SHORTTOK = 'T';
 	TRUE = 'true';
 	UNSOLTOK = 'unsol';
 
@@ -190,7 +190,7 @@ ATOM
 	;
 
 INTEGER
-	: '0'..'9'+
+	: '-'? '0'..'9'+
 	;
 
 WS
