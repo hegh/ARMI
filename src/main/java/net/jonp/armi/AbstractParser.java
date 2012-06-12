@@ -463,7 +463,7 @@ public abstract class AbstractParser
         try {
             for (final Map.Entry<String, Object> entry : fields.entrySet()) {
                 fieldName = entry.getKey();
-                final Field field = clazz.getField(fieldName);
+                final Field field = clazz.getDeclaredField(fieldName);
                 field.setAccessible(true);
 
                 final Object value = entry.getValue();

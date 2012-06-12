@@ -4,7 +4,11 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.NotBoundException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -163,10 +167,26 @@ public abstract class AbstractLanguageObject
         }
         else {
             buf.append(registry.reverseLookup(arg.getClass())).append(" (");
-            final Field[] fields = arg.getClass().getFields();
-            AccessibleObject.setAccessible(fields, true);
-
             boolean first = true;
+
+            Class<?> clazz = arg.getClass();
+            final List<Field> fields = new ArrayList<Field>();
+            while (clazz != null) {
+                final Field[] fieldArray = clazz.getDeclaredFields();
+                AccessibleObject.setAccessible(fieldArray, true);
+
+                Collections.addAll(fields, fieldArray);
+                clazz = clazz.getSuperclass();
+            }
+
+            Collections.sort(fields, new Comparator<Field>() {
+                @Override
+                public int compare(final Field lhs, final Field rhs)
+                {
+                    return lhs.getName().compareTo(rhs.getName());
+                }
+            });
+
             for (final Field field : fields) {
                 if (((field.getModifiers() & Modifier.TRANSIENT) != Modifier.TRANSIENT) &&
                     ((field.getModifiers() & Modifier.STATIC) != Modifier.STATIC)) {
