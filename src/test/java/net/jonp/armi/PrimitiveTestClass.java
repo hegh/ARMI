@@ -23,18 +23,32 @@ public class PrimitiveTestClass
     public static final String STRING =
         "PrimitiveTestClass(true, -5, 325, 1048576, 8589934592, -3.141593, 3.141593, \"string\\value\")";
 
-    public boolean booleanfield = true;
-    public byte bytefield = -5;
-    public short shortfield = 325;
-    public int intfield = 1048576;
-    public long longfield = 8589934592L;
-    public float floatfield = -3.1415927f;
-    public double doublefield = 3.141592653589793;
-    public String stringfield = "\"string\\value\"";
+    public boolean booleanfield;
+    public byte bytefield;
+    public short shortfield;
+    public int intfield;
+    public long longfield;
+    public float floatfield;
+    public double doublefield;
+    public String stringfield;
 
     public PrimitiveTestClass()
     {
-        // Nothing to do
+        this(false);
+    }
+
+    public PrimitiveTestClass(final boolean initialize)
+    {
+        if (initialize) {
+            booleanfield = true;
+            bytefield = -5;
+            shortfield = 325;
+            intfield = 1048576;
+            longfield = 8589934592L;
+            floatfield = -3.1415927f;
+            doublefield = 3.141592653589793;
+            stringfield = "\"string\\value\"";
+        }
     }
 
     @Override

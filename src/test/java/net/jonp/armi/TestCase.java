@@ -1,7 +1,8 @@
 package net.jonp.armi;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -16,16 +17,33 @@ public abstract class TestCase
     @Parameters
     public static Collection<Object[]> getTestObjects()
     {
-        return Arrays.asList(new Object[] {
+        final List<Object[]> params = new LinkedList<Object[]>();
+
+        // 0
+        params.add(new Object[] {
             new BlankTestClass()
-        }, new Object[] {
-            new InitializableTestClass()
-        }, new Object[] {
-            new PrimitiveTestClass()
-        }, new Object[] {
-            new AccessibleTestClass(AccessibleTestClass.FINALFIELD, AccessibleTestClass.TRANSIENTFIELD)
-        }, new Object[] {
-            new ArrayTestClass()
         });
+
+        // 1
+        params.add(new Object[] {
+            new InitializableTestClass()
+        });
+
+        // 2
+        params.add(new Object[] {
+            new PrimitiveTestClass(true)
+        });
+
+        // 3
+        params.add(new Object[] {
+            new AccessibleTestClass(true)
+        });
+
+        // 4
+        params.add(new Object[] {
+            new ArrayTestClass(true)
+        });
+
+        return params;
     }
 }

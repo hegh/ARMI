@@ -13,33 +13,41 @@ public class AccessibleTestClass
     public static final String COMMAND = "AccessTestObject (" + //
                                          "defaultfield = 15," + //
                                          " finalfield = 1," + //
-                                         " privatefield = 225," + //
+                                         " privatefield = -225," + //
                                          " protectedfield = 84)";
 
-    public static final String STRING = "AccessibleTestClass(1, 84, 15, 225)";
+    public static final String STRING = "AccessibleTestClass(1, 84, 15, -225)";
 
     public static final int FINALFIELD = 1;
     public static final int TRANSIENTFIELD = 21;
 
     public final int finalfield;
     public transient int transientfield;
-    public static int staticfield = 42;
+    public static int staticfield;
 
-    protected int protectedfield = 84;
-    int defaultfield = 15;
-    private int privatefield = 225;
+    protected int protectedfield;
+    int defaultfield;
+    private int privatefield;
 
     private transient boolean initialized = false;
 
     public AccessibleTestClass()
     {
-        this(0, 0);
+        this(false);
     }
 
-    public AccessibleTestClass(final int fvalue, final int tvalue)
+    public AccessibleTestClass(final boolean initialize)
     {
-        finalfield = fvalue;
-        transientfield = tvalue;
+        if (initialize) {
+            finalfield = FINALFIELD;
+            transientfield = TRANSIENTFIELD;
+            protectedfield = 84;
+            defaultfield = 15;
+            privatefield = -225;
+        }
+        else {
+            finalfield = 0;
+        }
     }
 
     @Override

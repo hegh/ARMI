@@ -31,27 +31,38 @@ public class ArrayTestClass
     public static final String STRING =
         "ArrayTestClass([3, 5, 7], [s1, s2, s3], null, [String1, 2, 3.4, [Sub1, [SubSub1, null, SubSub2], Sub2], true])";
 
-    public Integer[] intarray = new Integer[] {
-        3, 5, 7
-    };
+    public Integer[] intarray;
 
-    public String[] stringarray = new String[] {
-        "s1", "s2", "s3"
-    };
+    public String[] stringarray;
 
     public final Short[] nullarray = null;
 
-    public Object[] nestedarray = new Object[] {
-        "String1", 2, 3.4, new Object[] {
-            "Sub1", new String[] {
-                "SubSub1", null, "SubSub2"
-            }, "Sub2"
-        }, true
-    };
+    public Object[] nestedarray;
 
     public ArrayTestClass()
     {
-        // Nothing to do
+        this(false);
+    }
+
+    public ArrayTestClass(final boolean initialize)
+    {
+        if (initialize) {
+            intarray = new Integer[] {
+                3, 5, 7
+            };
+
+            stringarray = new String[] {
+                "s1", "s2", "s3"
+            };
+
+            nestedarray = new Object[] {
+                "String1", 2, 3.4, new Object[] {
+                    "Sub1", new String[] {
+                        "SubSub1", null, "SubSub2"
+                    }, "Sub2"
+                }, true
+            };
+        }
     }
 
     @Override
