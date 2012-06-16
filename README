@@ -1,0 +1,52 @@
+Project description:
+ARMI (a.k.a. 'Alternative RMI') is an alternative RMI (Remote Method Invocation)
+API for Java.
+
+Objectives:
+ 1) Provide an RMI encoding that is easily read and written by humans, and is
+    discoverable (i.e. a newcomer can learn everything he needs to interface
+    with the system simply by typing 'help' and exploring from there).
+ 2) Provide a straightforward API for remote method invocation.
+ 3) Emphasize correctness in our code and encourage correctness in users' code.
+
+Overview:
+ARMI is a single library separated two main packages, each implementing two
+similar functions:
+ 1) The net.jonp.armi.command package represents commands sent to an RMI
+    implementation, which then executes those commands. It contains both
+    serialization and deserialization routines for commands.
+ 2) The net.jonp.armi.response package represents messages sent from an RMI
+    implementation to a connected client. These are usually responses to
+    commands (i.e. the result of the method invocation), but may also be
+    unsolicited messages. This package also contains both serialization and
+    deserialization routines, but for responses.
+There is also net.jonp.armi.io, which provides useful classes for implementing
+the lower-level communications interface between a RMI client/server, and
+net.jonp.armi, which provides the back-end serialization and deserialization
+routines used by the command and response packages.
+
+Getting started:
+If it exists, look in the example project (at the time of this writing, it did
+not yet exist, but was high on the to-do list).
+
+If not, the most important classes are CallCommand and CommandParser for dealing
+with commands, and ValueResponse (or ErrorResponse) and ResponseParser for
+dealing with responses. The JUnit tests should show how these classes can be
+used.
+
+Using Eclipse:
+From the root project directory, execute "mvn eclipse:eclipse" to build Eclipse
+projects (you need to have Maven 2 installed; see http://maven.apache.org/).
+Then, from Eclipse, use the import existing projects tool to browse to the root
+project directory. Import all projects that Eclipse finds.
+
+Contributing:
+If you are looking for something to do, search for TODO and FUTURE comments in
+the source and implement the suggestions. Additionally, check for a TODO file
+and for issues on GitHub.
+
+When writing Java code, please conform to the formatter rules in CodeFormat.xml,
+and the import ordering in ImportOrganization.importorder (these are Eclipse
+configuration files). Additionally, please remove all trailing whitespace from
+all lines and use four spaces for each level of indentation; do not use tabs.
+
