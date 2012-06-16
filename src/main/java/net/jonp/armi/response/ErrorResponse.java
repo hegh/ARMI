@@ -1,9 +1,11 @@
-package net.jonp.armi;
+package net.jonp.armi.response;
+
+import net.jonp.armi.ClassRegistry;
 
 /**
  * Represents an Error response.
  */
-public class Error
+public class ErrorResponse
     extends Response
 {
     private final String exception;
@@ -21,7 +23,7 @@ public class Error
      * @throws NullPointerException If <code>_path</code> or
      *             <code>_message</code> is <code>null</code>.
      */
-    public Error(final String _label, final String _exception, final String _message)
+    public ErrorResponse(final String _label, final String _exception, final String _message)
     {
         super(_label);
 
@@ -65,7 +67,7 @@ public class Error
     @Override
     public String toString()
     {
-        return String.format("%s[%s]", exception, message);
+        return String.format("%s[%s]", getException(), getMessage());
     }
 
     /**
@@ -93,12 +95,12 @@ public class Error
 
         buf.append("error ");
 
-        if (label != null) {
-            buf.append("label \"").append(label).append("\" ");
+        if (null != getLabel()) {
+            buf.append("label \"").append(getLabel()).append("\" ");
         }
 
-        buf.append(exception).append(" ");
-        buf.append("(\"").append(message).append("\")");
+        buf.append(getException()).append(" ");
+        buf.append("(\"").append(getMessage()).append("\")");
 
         return buf.toString();
     }

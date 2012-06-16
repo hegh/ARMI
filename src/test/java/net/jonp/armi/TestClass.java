@@ -1,5 +1,7 @@
 package net.jonp.armi;
 
+import java.util.Arrays;
+
 /**
  * Used to test object serialization.
  */
@@ -10,6 +12,7 @@ public class TestClass
     public int field2;
     public double field3;
     public boolean field4;
+    public Object[] field5;
 
     public TestClass()
     {
@@ -20,7 +23,7 @@ public class TestClass
     public int hashCode()
     {
         return (null == field1 ? 0 : field1.hashCode()) ^ field2 ^ Double.valueOf(field3).hashCode() ^
-               Boolean.valueOf(field4).hashCode();
+               Boolean.valueOf(field4).hashCode() ^ field5.length;
     }
 
     @Override
@@ -40,7 +43,7 @@ public class TestClass
                 return false;
             }
 
-            return (field2 == rhs.field2 && field3 == rhs.field3 && field4 == rhs.field4);
+            return (field2 == rhs.field2 && field3 == rhs.field3 && field4 == rhs.field4 && Arrays.equals(field5, rhs.field5));
         }
         else {
             return false;
@@ -61,6 +64,6 @@ public class TestClass
     @Override
     public String toString()
     {
-        return String.format("TestClass(%s, %d, %f, %b)", field1, field2, field3, field4);
+        return String.format("TestClass(%s, %d, %f, %b, %s)", field1, field2, field3, field4, Conversion.describe(field5));
     }
 }

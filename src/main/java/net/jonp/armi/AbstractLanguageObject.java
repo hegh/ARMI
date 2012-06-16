@@ -16,7 +16,9 @@ public abstract class AbstractLanguageObject
     /**
      * Construct a new AbstractLanguageObject.
      * 
-     * @param _label The label, or <code>null</code>.
+     * @param _label The label, or <code>null</code>. The label <code>*</code>
+     *            is used for the response when a command has a syntax error and
+     *            cannot be parsed, and should not be used otherwise.
      */
     protected AbstractLanguageObject(final String _label)
     {
@@ -64,14 +66,34 @@ public abstract class AbstractLanguageObject
         throws NotBoundException
     {
         final StringBuilder buf = new StringBuilder();
-        if (arg instanceof Number) {
+        if (null == arg) {
+            buf.append("null");
+        }
+        else if (arg instanceof Number) {
             buf.append(arg.toString());
         }
         else if (arg instanceof CharSequence) {
+            // FIXME: What about double-quotes?
             buf.append("\"").append(arg.toString()).append("\"");
         }
         else if (arg instanceof Boolean) {
             buf.append(arg.toString());
+        }
+        else if (arg instanceof Object[]) {
+            buf.append("array [");
+            final Object[] elements = (Object[])arg;
+            boolean first = true;
+            for (final Object element : elements) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    buf.append(", ");
+                }
+
+                buf.append(makeArgument(element, registry));
+            }
+            buf.append("]");
         }
         else {
             buf.append(registry.reverseLookup(arg.getClass())).append(" (");

@@ -1,13 +1,16 @@
-package net.jonp.armi;
+package net.jonp.armi.response;
+
+import net.jonp.armi.AbstractLanguageObject;
+import net.jonp.armi.command.CallCommand;
 
 /**
- * Represents a response to a {@link Command}.
+ * Represents a response to a {@link CallCommand}.
  */
 public abstract class Response
     extends AbstractLanguageObject
 {
     /**
-     * Represents a response to a {@link Command}.
+     * Represents a response to a {@link CallCommand}.
      * 
      * @param _label The label on the response, or <code>null</code>.
      */

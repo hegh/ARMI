@@ -6,22 +6,33 @@ options {
 }
 
 tokens {
+	ARRAYTOK = 'array';
 	CALLTOK = 'call';
 	COMMA = ',';
 	DOT = '.';
 	EQUALS = '=';
 	ERRORTOK = 'error';
 	FALSE = 'false';
+	HELP = 'help';
 	LABELTOK = 'label';
+	LBRACKET = '[';
+	LIST = 'list';
 	LPAREN = '(';
+	METHODS = 'methods';
+	NIL = 'null';
+	OBJECTS = 'objects';
+	RBRACKET = ']';
 	RESPONSETOK = 'response';
 	RPAREN = ')';
 	TRUE = 'true';
+	UNSOLTOK = 'unsol';
 
 	ARG;
 	ARGS;
+	ARRAY;
 	BOOL;
 	CALL;
+	ELEMENTS;
 	ERROR;
 	FIELD;
 	FIELDS;
@@ -31,6 +42,8 @@ tokens {
 	OBJ;
 	RESPONSE;
 	STR;
+	STRINGS;
+	UNSOLICITED;
 }
 
 @header {
@@ -43,11 +56,20 @@ tokens {
 
 command
 	: CALLTOK label? ident LPAREN arguments RPAREN -> ^(CALL label? ident arguments)
+	| HELP
+	| LIST label? list -> ^(LIST label? list)
+	;
+
+list
+	: OBJECTS       -> ^(OBJECTS)
+	| METHODS ident -> ^(METHODS ident)
 	;
 
 response
 	: RESPONSETOK label? LPAREN val RPAREN       -> ^(RESPONSE label? val)
 	| ERRORTOK label? ident LPAREN string RPAREN -> ^(ERROR label? ident string)
+	| LIST label? LPAREN stringlist RPAREN       -> ^(LIST label? stringlist)
+	| UNSOLTOK LPAREN ident COMMA val RPAREN     -> ^(UNSOLICITED ident val)
 	;
 
 label
@@ -60,17 +82,25 @@ ident
 
 arguments
 	: argument (COMMA argument)* -> ^(ARGS argument argument*)
+	| -> ^(ARGS)
 	;
 
 argument
 	: val -> ^(ARG val)
 	;
 
+stringlist
+	: string (COMMA string)* -> ^(STRINGS string string*)
+	| -> ^(STRINGS)
+	;
+
 val
 	: string
 	| number
 	| bool
+	| array
 	| object
+	| NIL
 	;
 
 string
@@ -86,16 +116,26 @@ bool
 	| FALSE -> ^(BOOL FALSE)
 	;
 
+array
+	: ARRAYTOK LBRACKET elements RBRACKET -> ^(ARRAY elements)
+	;
+
 object
 	: ident LPAREN fields RPAREN -> ^(OBJ ident fields)
 	;
 
 fields
 	: field (COMMA field)* -> ^(FIELDS field field*)
+	| -> ^(FIELDS)
 	;
 
 field
 	: ATOM EQUALS val -> ^(FIELD ATOM val)
+	;
+
+elements
+	: val (COMMA val)* -> ^(ELEMENTS val val*)
+	| -> ^(ELEMENTS)
 	;
 
 STRING

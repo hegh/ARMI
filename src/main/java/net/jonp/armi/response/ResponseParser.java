@@ -1,11 +1,13 @@
-package net.jonp.armi;
+package net.jonp.armi.response;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.jonp.armi.response.ErrorResponse;
-import net.jonp.armi.response.Response;
-import net.jonp.armi.response.ValueResponse;
+import net.jonp.armi.ARMIParser;
+import net.jonp.armi.AbstractParser;
+import net.jonp.armi.ClassRegistry;
+import net.jonp.armi.Conversion;
+import net.jonp.armi.SyntaxException;
 
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
@@ -40,7 +42,7 @@ public class ResponseParser
     public Response readNextResponse()
         throws SyntaxException
     {
-        ARMIParser.response_return r;
+        final ARMIParser.response_return r;
         try {
             r = parser.response();
         }
@@ -67,6 +69,10 @@ public class ResponseParser
                 return response(ast);
             case ARMIParser.ERROR:
                 return error(ast);
+            case ARMIParser.LIST:
+                return list(ast);
+            case ARMIParser.UNSOLICITED:
+                return unsolicited(ast);
             default:
                 throw new SyntaxException("Root of response is not RESPONSE or ERROR: " + ast.getType());
         }
@@ -76,7 +82,7 @@ public class ResponseParser
      * Parse the tree from a Value response.
      * 
      * @param ast The tree.
-     * @return The Value object.
+     * @return The ValueResponse object.
      * @throws SyntaxException If there was a problem parsing the tree.
      */
     private ValueResponse response(final CommonTree ast)
@@ -108,7 +114,7 @@ public class ResponseParser
      * Parse the tree from an Error response.
      * 
      * @param ast The tree.
-     * @return The Error object.
+     * @return The ErrorResponse object.
      * @throws SyntaxException If there was a problem parsing the tree.
      */
     private ErrorResponse error(final CommonTree ast)
@@ -140,5 +146,71 @@ public class ResponseParser
         }
 
         return new ErrorResponse(label, Conversion.arrayToString(path, "."), message);
+    }
+
+    /**
+     * Parse the tree from a List response.
+     * 
+     * @param ast The tree.
+     * @return The ListResponse object.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    private ListResponse list(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.LIST) {
+            throw new SyntaxException("Root of list response is not LIST: " + ast.getType());
+        }
+
+        String label = null;
+        String[] values = null;
+
+        for (final Object childAST : ast.getChildren()) {
+            final CommonTree child = (CommonTree)childAST;
+            switch (child.getType()) {
+                case ARMIParser.LABEL:
+                    label = label(child);
+                    break;
+                case ARMIParser.STRINGS:
+                    values = strings(child);
+                    break;
+                default:
+                    throw new SyntaxException("Illegal child of LIST: " + child.getType());
+            }
+        }
+
+        return new ListResponse(label, values);
+    }
+
+    /**
+     * Parse the tree from an Unsolicited response.
+     * 
+     * @param ast The tree.
+     * @return The UnsolicitedResponse object.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    private UnsolicitedResponse unsolicited(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.UNSOLICITED) {
+            throw new SyntaxException("Root of unsolicited response is not UNSOLICITED: " + ast.getType());
+        }
+
+        String[] path = null;
+        Object value = null;
+
+        for (final Object childAST : ast.getChildren()) {
+            final CommonTree child = (CommonTree)childAST;
+            switch (child.getType()) {
+                case ARMIParser.IDENT:
+                    path = ident(child);
+                    break;
+                default:
+                    value = val(child);
+                    break;
+            }
+        }
+
+        return new UnsolicitedResponse(Conversion.arrayToString(path, "."), value);
     }
 }

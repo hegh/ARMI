@@ -32,6 +32,13 @@ public abstract class AbstractParser
     protected AbstractParser(final InputStream in, final ClassRegistry _registry)
         throws IOException
     {
+        // FIXME: ANTLRInputStream, which is descended from ANTLRStringStream,
+        // vacuums the input stream and provides data to ANTLR from the
+        // resulting buffer; this is not compatible with on-line command parsing
+        // Need to provide commands one-by-one to ANTLR, which means either
+        // writing a new ANTLR CharStream, or writing something like
+        // MUXInputStream which is more flexible, as it needs to pre-parse the
+        // command stream
         final ANTLRInputStream charStream = new ANTLRInputStream(in);
         final ARMILexer lexer = new ARMILexer(charStream);
         final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
@@ -44,17 +51,17 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The label.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected String label(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.LABEL) {
-            throw new CommandException("Not a LABEL: " + ast.getType());
+            throw new SyntaxException("Not a LABEL: " + ast.getType());
         }
 
         if (ast.getChildCount() != 1) {
-            throw new CommandException("LABEL childCount != 1: " + ast.getChildCount());
+            throw new SyntaxException("LABEL childCount != 1: " + ast.getChildCount());
         }
 
         return str((CommonTree)ast.getChild(0));
@@ -65,10 +72,10 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The path of the identifier (packages, objects, ...).
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected String[] ident(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         final String[] path = new String[ast.getChildCount()];
         int i = 0;
@@ -85,10 +92,10 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The value.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected Object val(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         switch (ast.getType()) {
             case ARMIParser.STR:
@@ -97,11 +104,42 @@ public abstract class AbstractParser
                 return num(ast);
             case ARMIParser.BOOL:
                 return bool(ast);
+            case ARMIParser.ARRAY:
+                return array(ast);
             case ARMIParser.OBJ:
                 return obj(ast);
+            case ARMIParser.NIL:
+                return null;
             default:
-                throw new CommandException("Unknown VAL type: " + ast.getType());
+                throw new SyntaxException("Unknown VAL type: " + ast.getType());
         }
+    }
+
+    /**
+     * Parse the tree from a strings.
+     * 
+     * @param ast The tree.
+     * @return The string array.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    protected String[] strings(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.STRINGS) {
+            throw new SyntaxException("Not a STRINGS: " + ast.getType());
+        }
+
+        final String[] values = new String[ast.getChildCount()];
+        if (values.length > 0) {
+            // Otherwise, ast.getChildren() may be null
+            int i = 0;
+            for (final Object childAST : ast.getChildren()) {
+                final CommonTree child = (CommonTree)childAST;
+                values[i++] = str(child);
+            }
+        }
+
+        return values;
     }
 
     /**
@@ -109,17 +147,17 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The string.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected String str(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.STR) {
-            throw new CommandException("Not a STR: " + ast.getType());
+            throw new SyntaxException("Not a STR: " + ast.getType());
         }
 
         if (ast.getChildCount() != 1) {
-            throw new CommandException("STR childCount != 1: " + ast.getChildCount());
+            throw new SyntaxException("STR childCount != 1: " + ast.getChildCount());
         }
 
         return ast.getChild(0).getText();
@@ -130,13 +168,13 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The number.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected Number num(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.NUM) {
-            throw new CommandException("Not a NUM: " + ast.getType());
+            throw new SyntaxException("Not a NUM: " + ast.getType());
         }
 
         if (ast.getChildCount() == 1) {
@@ -146,7 +184,7 @@ public abstract class AbstractParser
             return Double.valueOf(ast.getChild(0).getText() + "." + ast.getChild(2).getText());
         }
         else {
-            throw new CommandException("NUM childCount != 1 or 3: " + ast.getChildCount());
+            throw new SyntaxException("NUM childCount != 1 or 3: " + ast.getChildCount());
         }
     }
 
@@ -155,20 +193,65 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The boolean.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected Boolean bool(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.BOOL) {
-            throw new CommandException("Not a BOOL: " + ast.getType());
+            throw new SyntaxException("Not a BOOL: " + ast.getType());
         }
 
         if (ast.getChildCount() != 1) {
-            throw new CommandException("BOOL childCount != 1: " + ast.getChildCount());
+            throw new SyntaxException("BOOL childCount != 1: " + ast.getChildCount());
         }
 
         return Boolean.valueOf(ast.getChild(0).getText());
+    }
+
+    /**
+     * Parse the tree from an array.
+     * 
+     * @param ast The tree.
+     * @return The elements of the array.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    protected Object[] array(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.ARRAY) {
+            throw new SyntaxException("Not an ARRAY: " + ast.getType());
+        }
+
+        if (ast.getChildCount() != 1) {
+            throw new SyntaxException("ARRAY childCount != 1: " + ast.getChildCount());
+        }
+
+        return elements((CommonTree)ast.getChild(0));
+    }
+
+    /**
+     * Parse the tree from an elements.
+     * 
+     * @param ast The tree.
+     * @return The elements.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    protected Object[] elements(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.ELEMENTS) {
+            throw new SyntaxException("Not an ELEMENTS: " + ast.getType());
+        }
+
+        final Object[] elements = new Object[ast.getChildCount()];
+        int i = 0;
+        for (final Object childAST : ast.getChildren()) {
+            final CommonTree child = (CommonTree)childAST;
+            elements[i++] = val(child);
+        }
+
+        return elements;
     }
 
     /**
@@ -176,18 +259,18 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return The object.
-     * @throws CommandException If there was a problem parsing the tree or
+     * @throws SyntaxException If there was a problem parsing the tree or
      *             instantiating the object.
      */
     protected Object obj(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.OBJ) {
-            throw new CommandException("Not a OBJ: " + ast.getType());
+            throw new SyntaxException("Not a OBJ: " + ast.getType());
         }
 
         if (ast.getChildCount() != 2) {
-            throw new CommandException("OBJ childCount != 2: " + ast.getChildCount());
+            throw new SyntaxException("OBJ childCount != 2: " + ast.getChildCount());
         }
 
         final String[] ident = ident((CommonTree)ast.getChild(0));
@@ -201,19 +284,22 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @return A map of field names onto field values.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected Map<String, Object> fields(final CommonTree ast)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.FIELDS) {
-            throw new CommandException("Not a FIELDS: " + ast.getType());
+            throw new SyntaxException("Not a FIELDS: " + ast.getType());
         }
 
         final Map<String, Object> map = new HashMap<String, Object>();
-        for (final Object childAST : ast.getChildren()) {
-            final CommonTree child = (CommonTree)childAST;
-            addField(child, map);
+        if (ast.getChildCount() > 0) {
+            // Otherwise, getChildren() may be null
+            for (final Object childAST : ast.getChildren()) {
+                final CommonTree child = (CommonTree)childAST;
+                addField(child, map);
+            }
         }
 
         return map;
@@ -224,17 +310,17 @@ public abstract class AbstractParser
      * 
      * @param ast The tree.
      * @param fields The map to which the field will be added.
-     * @throws CommandException If there was a problem parsing the tree.
+     * @throws SyntaxException If there was a problem parsing the tree.
      */
     protected void addField(final CommonTree ast, final Map<String, Object> fields)
-        throws CommandException
+        throws SyntaxException
     {
         if (ast.getType() != ARMIParser.FIELD) {
-            throw new CommandException("Not a FIELD: " + ast.getType());
+            throw new SyntaxException("Not a FIELD: " + ast.getType());
         }
 
         if (ast.getChildCount() != 2) {
-            throw new CommandException("FIELD childCount != 2: " + ast.getChildCount());
+            throw new SyntaxException("FIELD childCount != 2: " + ast.getChildCount());
         }
 
         final String name = ast.getChild(0).getText();
@@ -249,12 +335,12 @@ public abstract class AbstractParser
      * @param className The name of the class to construct.
      * @param fields A map of field names onto field values.
      * @return The object.
-     * @throws CommandException If there was a problem constructing the object,
+     * @throws SyntaxException If there was a problem constructing the object,
      *             setting its fields, or calling {@link Initializable#init()},
      *             if it applies.
      */
     protected Object buildObject(final String className, final Map<String, Object> fields)
-        throws CommandException
+        throws SyntaxException
     {
         final Class<?> clazz;
 
@@ -262,7 +348,7 @@ public abstract class AbstractParser
             clazz = registry.lookup(className);
         }
         catch (final NotBoundException nbe) {
-            throw new CommandException("Unable to locate referenced class " + className + ": " + nbe.getMessage(), nbe);
+            throw new SyntaxException("Unable to locate referenced class " + className + ": " + nbe.getMessage(), nbe);
         }
 
         final Object instance;
@@ -270,10 +356,10 @@ public abstract class AbstractParser
             instance = clazz.newInstance();
         }
         catch (final InstantiationException ie) {
-            throw new CommandException("Cannot instantiate referenced class " + className + ": " + ie.getMessage(), ie);
+            throw new SyntaxException("Cannot instantiate referenced class " + className + ": " + ie.getMessage(), ie);
         }
         catch (final IllegalAccessException iae) {
-            throw new CommandException("Cannot access reference class constructor " + className + ": " + iae.getMessage(), iae);
+            throw new SyntaxException("Cannot access reference class constructor " + className + ": " + iae.getMessage(), iae);
         }
 
         // FUTURE: Look for set methods and use them rather than fields
@@ -312,14 +398,15 @@ public abstract class AbstractParser
             }
         }
         catch (final NoSuchFieldException nsfe) {
-            throw new CommandException("No field " + fieldName + " exists on " + className + ": " + nsfe.getMessage(), nsfe);
+            throw new SyntaxException("No field " + fieldName + " exists on " + className + ": " + nsfe.getMessage(), nsfe);
         }
         catch (final IllegalAccessException iae) {
-            throw new CommandException("Cannot access field " + fieldName + " on " + className + ": " + iae.getMessage(), iae);
+            throw new SyntaxException("Cannot access field " + fieldName + " on " + className + ": " + iae.getMessage(), iae);
         }
         catch (final IllegalArgumentException iae) {
-            throw new CommandException("Illegal conversion when setting " + fieldName + " on " + className + ": " +
-                                       iae.getMessage(), iae);
+            throw new SyntaxException(
+                                      "Illegal conversion when setting " + fieldName + " on " + className + ": " + iae.getMessage(),
+                                      iae);
         }
 
         if (instance instanceof Initializable) {
@@ -327,7 +414,7 @@ public abstract class AbstractParser
                 ((Initializable)instance).init();
             }
             catch (final Throwable th) {
-                throw new CommandException("Failed to initialize a " + className + ": " + th.getMessage(), th);
+                throw new SyntaxException("Failed to initialize a " + className + ": " + th.getMessage(), th);
             }
         }
 

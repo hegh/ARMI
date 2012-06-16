@@ -1,16 +1,19 @@
-package net.jonp.armi;
+package net.jonp.armi.command;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.jonp.armi.command.CallCommand;
-import net.jonp.armi.command.Command;
+import net.jonp.armi.ARMIParser;
+import net.jonp.armi.AbstractParser;
+import net.jonp.armi.ClassRegistry;
+import net.jonp.armi.Conversion;
+import net.jonp.armi.SyntaxException;
 
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.CommonTree;
 
 /**
- * Parses commands into {@link Command} objects.
+ * Parses commands into {@link CallCommand} objects.
  */
 public class CommandParser
     extends AbstractParser
@@ -61,13 +64,56 @@ public class CommandParser
     private Command command(final CommonTree ast)
         throws SyntaxException
     {
-        if (ast.getType() != ARMIParser.CALL) {
-            throw new SyntaxException("Root of command is not CALL: " + ast.getType());
+        switch (ast.getType()) {
+            case ARMIParser.CALL: {
+                String label = null;
+                String[] path = null;
+                Object[] args = null;
+
+                for (final Object childAST : ast.getChildren()) {
+                    final CommonTree child = (CommonTree)childAST;
+                    switch (child.getType()) {
+                        case ARMIParser.LABEL:
+                            label = label(child);
+                            break;
+                        case ARMIParser.IDENT:
+                            path = ident(child);
+                            break;
+                        case ARMIParser.ARGS:
+                            args = args(child);
+                            break;
+                        default:
+                            throw new SyntaxException("Illegal child of CALL: " + child.getType());
+                    }
+                }
+
+                return new CallCommand(label, Conversion.arrayToString(path, 0, path.length - 1, "."), path[path.length - 1], args);
+            }
+            case ARMIParser.HELP:
+                return new HelpCommand();
+            case ARMIParser.LIST:
+                return list(ast);
+            default:
+                throw new SyntaxException("Root of command is not CALL, HELP, or LIST: " + ast.getType());
+        }
+    }
+
+    /**
+     * Parse the tree from a LIST command.
+     * 
+     * @param ast The tree.
+     * @return The List command.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    private ListCommand list(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.LIST) {
+            throw new SyntaxException("Not a LIST: " + ast.getType());
         }
 
         String label = null;
-        String[] path = null;
-        Object[] args = null;
+        String object = null;
 
         for (final Object childAST : ast.getChildren()) {
             final CommonTree child = (CommonTree)childAST;
@@ -75,18 +121,18 @@ public class CommandParser
                 case ARMIParser.LABEL:
                     label = label(child);
                     break;
-                case ARMIParser.IDENT:
-                    path = ident(child);
+                case ARMIParser.METHODS:
+                    object = Conversion.arrayToString(ident((CommonTree)child.getChild(0)), ".");
                     break;
-                case ARMIParser.ARGS:
-                    args = args(child);
+                case ARMIParser.OBJECTS:
+                    object = null;
                     break;
                 default:
-                    throw new SyntaxException("Illegal child of CALL: " + child.getType());
+                    throw new SyntaxException("Child of LIST is not LABEL, METHODS, or OBJECTS: " + child.getType());
             }
         }
 
-        return new CallCommand(label, Conversion.arrayToString(path, 0, path.length - 1, "."), path[path.length - 1], args);
+        return new ListCommand(label, object);
     }
 
     /**
@@ -104,10 +150,13 @@ public class CommandParser
         }
 
         final Object[] args = new Object[ast.getChildCount()];
-        int i = 0;
-        for (final Object childAST : ast.getChildren()) {
-            final CommonTree child = (CommonTree)childAST;
-            args[i++] = arg(child);
+        if (args.length > 0) {
+            // Otherwise getChildren() may be null
+            int i = 0;
+            for (final Object childAST : ast.getChildren()) {
+                final CommonTree child = (CommonTree)childAST;
+                args[i++] = arg(child);
+            }
         }
 
         return args;

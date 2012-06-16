@@ -1,11 +1,14 @@
-package net.jonp.armi;
+package net.jonp.armi.response;
 
 import java.rmi.NotBoundException;
+
+import net.jonp.armi.ClassRegistry;
+import net.jonp.armi.Conversion;
 
 /**
  * Represents a value returned by a response.
  */
-public class Value
+public class ValueResponse
     extends Response
 {
     private final Object value;
@@ -17,7 +20,7 @@ public class Value
      * @param _value The value, may not be <code>null</code>.
      * @throws NullPointerException If <code>_value</code> is <code>null</code>.
      */
-    public Value(final String _label, final Object _value)
+    public ValueResponse(final String _label, final Object _value)
     {
         super(_label);
 
@@ -46,7 +49,7 @@ public class Value
     @Override
     public String toString()
     {
-        return String.format("%s", value.toString());
+        return Conversion.describe(getValue());
     }
 
     /*
@@ -62,11 +65,11 @@ public class Value
 
         buf.append("response ");
 
-        if (label != null) {
-            buf.append("label \"").append(label).append("\" ");
+        if (null != getLabel()) {
+            buf.append("label \"").append(getLabel()).append("\" ");
         }
 
-        buf.append("(").append(makeArgument(value, registry)).append(")");
+        buf.append("(").append(makeArgument(getValue(), registry)).append(")");
 
         return buf.toString();
     }

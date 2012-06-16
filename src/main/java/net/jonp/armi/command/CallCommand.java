@@ -1,26 +1,29 @@
-package net.jonp.armi;
+package net.jonp.armi.command;
 
 import java.rmi.NotBoundException;
 
+import net.jonp.armi.ClassRegistry;
+import net.jonp.armi.Conversion;
+
 /**
- * Represents a command, which is a method call with an optional label.
+ * Represents a call command, which is a remote method call.
  */
-public class Command
-    extends AbstractLanguageObject
+public class CallCommand
+    extends Command
 {
     private final String object;
     private final String method;
     private final Object[] arguments;
 
     /**
-     * Construct a new Command.
+     * Construct a new CallCommand.
      * 
      * @param _label The label, or <code>null</code>.
      * @param _object The name of the object whose method is being referenced.
      * @param _method The name of the method.
      * @param _arguments The arguments to pass to the method.
      */
-    public Command(final String _label, final String _object, final String _method, final Object[] _arguments)
+    public CallCommand(final String _label, final String _object, final String _method, final Object[] _arguments)
     {
         super(_label);
 
@@ -71,7 +74,7 @@ public class Command
     @Override
     public String toString()
     {
-        return String.format("%s.%s(%s)", object, method, Conversion.arrayToString(arguments, ", "));
+        return String.format("%s.%s(%s)", getObject(), getMethod(), Conversion.arrayToString(getArguments(), ", "));
     }
 
     /*
@@ -87,16 +90,17 @@ public class Command
 
         buf.append("call ");
 
-        if (label != null) {
-            buf.append("label \"").append(label).append("\" ");
+        if (null != getLabel()) {
+            buf.append("label \"").append(getLabel()).append("\" ");
         }
 
-        buf.append(object).append(".").append(method).append(" (");
-        for (int i = 0; i < arguments.length; i++) {
-            final Object arg = arguments[i];
+        buf.append(getObject()).append(".").append(getMethod()).append(" (");
+        final Object[] _arguments = getArguments();
+        for (int i = 0; i < _arguments.length; i++) {
+            final Object arg = _arguments[i];
             buf.append(makeArgument(arg, registry));
 
-            if (i < arguments.length - 1) {
+            if (i < _arguments.length - 1) {
                 buf.append(", ");
             }
         }

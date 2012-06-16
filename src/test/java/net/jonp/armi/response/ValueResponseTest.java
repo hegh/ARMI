@@ -1,18 +1,22 @@
-package net.jonp.armi;
+package net.jonp.armi.response;
 
 import static org.junit.Assert.assertEquals;
 
 import java.rmi.NotBoundException;
 
+import net.jonp.armi.DefaultClassRegistry;
+import net.jonp.armi.TestClass;
+
 import org.junit.Test;
 
 /**
- * Tests the Value class.
+ * Tests the ValueResponse class.
  */
-public class ValueTest
+public class ValueResponseTest
 {
     /**
-     * Test method for {@link net.jonp.armi.Value#toStatement()}.
+     * Test method for
+     * {@link net.jonp.armi.response.ValueResponse#toStatement()}.
      * 
      * @throws NotBoundException If there was a problem with the class registry.
      */
@@ -24,32 +28,35 @@ public class ValueTest
         registry.put("TestObject", TestClass.class);
 
         final String expected =
-            "response label \"label\" (TestObject" + " (field1 = \"val1\", field2 = 12, field3 = 13.45, field4 = true))";
-        final Value value = getTestValue();
+            "response label \"label\" (TestObject"
+                + " (field1 = \"val1\", field2 = 12, field3 = 13.45, field4 = true, field5 = array [\"string\"]))";
+        final ValueResponse value = getTestValue();
 
         assertEquals(expected, value.toStatement(registry));
     }
 
     /**
-     * Test method for {@link net.jonp.armi.Value#getValue()}.
+     * Test method for
+     * {@link net.jonp.armi.response.ValueResponse#getValue()}.
      */
     @Test
     public void testGetValue()
     {
         final TestClass expected = getTestObject();
-        final Value value = getTestValue();
+        final ValueResponse value = getTestValue();
 
         assertEquals(expected, value.getValue());
     }
 
     /**
-     * Test method for {@link net.jonp.armi.Value#toString()}.
+     * Test method for
+     * {@link net.jonp.armi.response.ValueResponse#toString()}.
      */
     @Test
     public void testToString()
     {
         final String expected = getTestObject().toString();
-        final Value value = getTestValue();
+        final ValueResponse value = getTestValue();
 
         assertEquals(expected, value.toString());
     }
@@ -62,7 +69,7 @@ public class ValueTest
     public void testGetLabel()
     {
         final String expected = "label";
-        final Value value = getTestValue();
+        final ValueResponse value = getTestValue();
 
         assertEquals(expected, value.getLabel());
     }
@@ -74,12 +81,15 @@ public class ValueTest
         testObject.field2 = 12;
         testObject.field3 = 13.45;
         testObject.field4 = true;
+        testObject.field5 = new Object[] {
+            "string"
+        };
 
         return testObject;
     }
 
-    private Value getTestValue()
+    private ValueResponse getTestValue()
     {
-        return new Value("label", getTestObject());
+        return new ValueResponse("label", getTestObject());
     }
 }

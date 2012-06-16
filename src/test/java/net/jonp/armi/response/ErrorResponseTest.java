@@ -1,58 +1,62 @@
-package net.jonp.armi;
+package net.jonp.armi.response;
 
 import static org.junit.Assert.assertEquals;
+
+import net.jonp.armi.AbstractLanguageObject;
+import net.jonp.armi.response.ErrorResponse;
 
 import org.junit.Test;
 
 /**
- * Tests the Error class.
+ * Tests the ErrorResponse class.
  */
-public class ErrorTest
+public class ErrorResponseTest
 {
     /**
-     * Test method for {@link net.jonp.armi.Error#toStatement()}.
+     * Test method for {@link net.jonp.armi.response.ErrorResponse#toStatement()}.
      */
     @Test
     public void testToStatement()
     {
         final String expected = "error label \"label\" java.lang.Exception (\"Message text\")";
-        final Error error = getTestError();
+        final ErrorResponse error = getTestError();
 
         assertEquals(expected, error.toStatement());
     }
 
     /**
-     * Test method for {@link net.jonp.armi.Error#getException()}.
+     * Test method for {@link net.jonp.armi.response.ErrorResponse#getException()}
+     * .
      */
     @Test
     public void testGetException()
     {
         final String expected = "java.lang.Exception";
-        final Error error = getTestError();
+        final ErrorResponse error = getTestError();
 
         assertEquals(expected, error.getException());
     }
 
     /**
-     * Test method for {@link net.jonp.armi.Error#getMessage()}.
+     * Test method for {@link net.jonp.armi.response.ErrorResponse#getMessage()}.
      */
     @Test
     public void testGetMessage()
     {
         final String expected = "Message text";
-        final Error error = getTestError();
+        final ErrorResponse error = getTestError();
 
         assertEquals(expected, error.getMessage());
     }
 
     /**
-     * Test method for {@link net.jonp.armi.Error#toString()}.
+     * Test method for {@link net.jonp.armi.response.ErrorResponse#toString()}.
      */
     @Test
     public void testToString()
     {
         final String expected = "java.lang.Exception[Message text]";
-        final Error error = getTestError();
+        final ErrorResponse error = getTestError();
 
         assertEquals(expected, error.toString());
     }
@@ -65,13 +69,13 @@ public class ErrorTest
     public void testGetLabel()
     {
         final String expected = "label";
-        final Error error = getTestError();
+        final ErrorResponse error = getTestError();
 
         assertEquals(expected, error.getLabel());
     }
 
-    private Error getTestError()
+    private ErrorResponse getTestError()
     {
-        return new Error("label", "java.lang.Exception", "Message text");
+        return new ErrorResponse("label", "java.lang.Exception", "Message text");
     }
 }

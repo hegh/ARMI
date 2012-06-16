@@ -3,7 +3,7 @@ package net.jonp.armi;
 /**
  * Represents a problem with a command or response.
  */
-public class CommandException
+public class SyntaxException
     extends Exception
 {
     /**
@@ -11,7 +11,7 @@ public class CommandException
      * 
      * @param msg The message.
      */
-    public CommandException(final String msg)
+    public SyntaxException(final String msg)
     {
         super(msg);
     }
@@ -22,7 +22,7 @@ public class CommandException
      * @param msg The message.
      * @param cause The cause.
      */
-    public CommandException(final String msg, final Throwable cause)
+    public SyntaxException(final String msg, final Throwable cause)
     {
         super(msg, cause);
     }
