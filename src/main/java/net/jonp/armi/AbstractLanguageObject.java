@@ -4,12 +4,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.NotBoundException;
 
+import org.apache.log4j.Logger;
+
 /**
  * Superclass for objects which can be represented by the command/response
  * language (i.e. commands and responses).
  */
 public abstract class AbstractLanguageObject
 {
+    private static final Logger LOG = Logger.getLogger(Utils.thisClassName());
+
     /** The label on this communication, or <code>null</code>. */
     protected final String label;
 
@@ -125,6 +129,8 @@ public abstract class AbstractLanguageObject
             buf.append(")");
         }
 
-        return buf.toString();
+        final String s = buf.toString();
+        LOG.debug("Converted '" + arg + "' to '" + s + "'");
+        return s;
     }
 }
