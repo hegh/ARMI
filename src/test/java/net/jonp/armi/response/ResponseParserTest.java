@@ -8,8 +8,8 @@ import java.io.InputStream;
 import java.rmi.NotBoundException;
 
 import net.jonp.armi.DefaultClassRegistry;
-import net.jonp.armi.Initializable;
 import net.jonp.armi.SyntaxException;
+import net.jonp.armi.TestCase;
 import net.jonp.armi.TestClass;
 
 import org.junit.Test;
@@ -18,9 +18,14 @@ import org.junit.Test;
  * Tests {@link ResponseParser}.
  */
 public class ResponseParserTest
+    extends TestCase
 {
-    /** Used to test {@link Initializable#init()}. */
-    public static int flag = 0;
+    private final TestClass test;
+
+    public ResponseParserTest(final TestClass _test)
+    {
+        test = _test;
+    }
 
     /**
      * Test method for
@@ -35,37 +40,23 @@ public class ResponseParserTest
     public void testReadNextValue()
         throws IOException, SyntaxException, NotBoundException
     {
-        flag = 0;
-
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("TestObject", TestClass2.class);
+        registry.put(test.getName(), test.getClass());
 
-        final String commandString = "response label \"label\" (TestObject (" + //
-                                     "field1 = \"val1\"," + //
-                                     " field2 = 12L," + //
-                                     " field3 = 13.45," + //
-                                     " field4 = true," + //
-                                     " field5 = array(java.lang.Object) [\"string\", 1, 2.3, true]," + //
-                                     " field6 = null," + //
-                                     " field7 = array(java.lang.Integer) []))";
+        final String commandString = "response label \"label\" (" + test.getCommand() + ")";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final ResponseParser parser = new ResponseParser(in, registry);
-
         final Response response = parser.readNextResponse();
-
 
         assertEquals("label", response.getLabel());
 
         assertEquals(true, response instanceof ValueResponse);
         final ValueResponse value = (ValueResponse)response;
 
-        assertEquals(getTestObject(), value.getValue());
+        assertEquals(test, value.getValue());
         assertEquals(commandString, value.toStatement(registry));
-        assertEquals("TestClass(val1, 12, 13.450000, true, [string, 1, 2.3, true], null, [])", value.toString());
-
-        // Make sure init() was called during deserialization
-        assertEquals(flag, 1);
+        assertEquals(test.getString(), value.toString());
+        assertEquals(true, test.isValid());
     }
 
     /**
@@ -82,15 +73,10 @@ public class ResponseParserTest
         throws IOException, SyntaxException, NotBoundException
     {
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("TestObject", TestClass2.class);
-
         final String commandString = "error java.lang.Exception (\"Error message\")";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final ResponseParser parser = new ResponseParser(in, registry);
-
         final Response response = parser.readNextResponse();
-
 
         assertEquals(null, response.getLabel());
 
@@ -116,12 +102,9 @@ public class ResponseParserTest
         throws IOException, SyntaxException, NotBoundException
     {
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-
         final String commandString = "unsol (type.of.message, \"value\")";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final ResponseParser parser = new ResponseParser(in, registry);
-
         final Response response = parser.readNextResponse();
 
         assertEquals(null, response.getLabel());
@@ -133,42 +116,5 @@ public class ResponseParserTest
         assertEquals("value", unsol.getValue());
         assertEquals(commandString, unsol.toStatement(registry));
         assertEquals("type.of.message(value)", unsol.toString());
-    }
-
-    private TestClass getTestObject()
-    {
-        final TestClass testObject = new TestClass();
-        testObject.field1 = "val1";
-        testObject.field2 = 12;
-        testObject.field3 = 13.45;
-        testObject.field4 = true;
-        testObject.field5 = new Object[] {
-            "string", 1, 2.3, true
-        };
-        testObject.field6 = null;
-        testObject.field7 = new Integer[] { };
-
-        return testObject;
-    }
-
-    public static class TestClass2
-        extends TestClass
-        implements Initializable
-    {
-        public TestClass2()
-        {
-            // Nothing to do
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see net.jonp.armi.Initializable#init()
-         */
-        @Override
-        public void init()
-        {
-            ResponseParserTest.flag++;
-        }
     }
 }

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import java.rmi.NotBoundException;
 
 import net.jonp.armi.DefaultClassRegistry;
+import net.jonp.armi.TestCase;
 import net.jonp.armi.TestClass;
 
 import org.junit.Test;
@@ -13,7 +14,15 @@ import org.junit.Test;
  * Test the {@link UnsolicitedResponse} class.
  */
 public class UnsolicitedResponseTest
+    extends TestCase
 {
+    private final TestClass test;
+
+    public UnsolicitedResponseTest(final TestClass _test)
+    {
+        test = _test;
+    }
+
     /**
      * Test method for
      * {@link net.jonp.armi.response.UnsolicitedResponse#toStatement(net.jonp.ms5.command.ClassRegistry)}
@@ -26,19 +35,13 @@ public class UnsolicitedResponseTest
         throws NotBoundException
     {
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("TestObject", TestClass.class);
+        registry.put(test.getName(), test.getClass());
 
-        final String expected = "unsol (type.of.response," + //
-                                " TestObject (field1 = \"val1\"," + //
-                                " field2 = 12L," + //
-                                " field3 = 13.45," + //
-                                " field4 = true," + //
-                                " field5 = null," + //
-                                " field6 = array(java.lang.String) []," + //
-                                " field7 = array(java.lang.Integer) [5, 4, 3]))";
+        final String expected = "unsol (type.of.response, " + test.getCommand() + ")";
         final UnsolicitedResponse unsol = getTestUnsolicited();
 
         assertEquals(expected, unsol.toStatement(registry));
+        assertEquals(true, ((TestClass)unsol.getValue()).isValid());
     }
 
     /**
@@ -61,10 +64,11 @@ public class UnsolicitedResponseTest
     @Test
     public void testGetValue()
     {
-        final Object expected = getTestObject();
+        final Object expected = test;
         final UnsolicitedResponse unsol = getTestUnsolicited();
 
         assertEquals(expected, unsol.getValue());
+        assertEquals(true, ((TestClass)unsol.getValue()).isValid());
     }
 
     /**
@@ -74,7 +78,7 @@ public class UnsolicitedResponseTest
     @Test
     public void testToString()
     {
-        final String expected = "type.of.response(" + getTestObject().toString() + ")";
+        final String expected = "type.of.response(" + test.getString() + ")";
         final UnsolicitedResponse unsol = getTestUnsolicited();
 
         assertEquals(expected, unsol.toString());
@@ -93,24 +97,8 @@ public class UnsolicitedResponseTest
         assertEquals(expected, unsol.getLabel());
     }
 
-    private TestClass getTestObject()
-    {
-        final TestClass testObject = new TestClass();
-        testObject.field1 = "val1";
-        testObject.field2 = 12;
-        testObject.field3 = 13.45;
-        testObject.field4 = true;
-        testObject.field5 = null;
-        testObject.field6 = new String[] { };
-        testObject.field7 = new Integer[] {
-            5, 4, 3
-        };
-
-        return testObject;
-    }
-
     private UnsolicitedResponse getTestUnsolicited()
     {
-        return new UnsolicitedResponse("type.of.response", getTestObject());
+        return new UnsolicitedResponse("type.of.response", test);
     }
 }

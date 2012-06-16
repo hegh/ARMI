@@ -9,8 +9,8 @@ import java.io.InputStream;
 import java.rmi.NotBoundException;
 
 import net.jonp.armi.DefaultClassRegistry;
-import net.jonp.armi.Initializable;
 import net.jonp.armi.SyntaxException;
+import net.jonp.armi.TestCase;
 import net.jonp.armi.TestClass;
 
 import org.junit.Test;
@@ -19,12 +19,14 @@ import org.junit.Test;
  * Tests {@link CommandParser}.
  */
 public class CommandParserTest
+    extends TestCase
 {
-    /**
-     * Used to verify that {@link TestClass2#init()} is called during
-     * deserialization.
-     */
-    public static int flag;
+    private final TestClass test;
+
+    public CommandParserTest(final TestClass _test)
+    {
+        test = _test;
+    }
 
     /**
      * Test method for
@@ -38,23 +40,14 @@ public class CommandParserTest
     public void testReadNextCallCommand1()
         throws IOException, SyntaxException, NotBoundException
     {
-        flag = 0;
-
+        // Make sure an object can be passed to a method, and that (if it is an
+        // Initialized type) it got initialized on receipt
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("TestObject", TestClass2.class);
+        registry.put(test.getName(), test.getClass());
 
-        final String commandString = "call label \"label\" object.method (" + //
-                                     "TestObject (field1 = \"val\\\\1\"," + //
-                                     " field2 = 12L," + //
-                                     " field3 = 13.45," + //
-                                     " field4 = true," + //
-                                     " field5 = null," + //
-                                     " field6 = array(java.lang.String) []," + //
-                                     " field7 = array(java.lang.Integer) [5, 4, 3]))";
+        final String commandString = "call label \"label\" object.method (" + test.getCommand() + ")";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final CommandParser parser = new CommandParser(in, registry);
-
         final Command command = parser.readNextCommand();
 
         assertTrue(command instanceof CallCommand);
@@ -64,54 +57,22 @@ public class CommandParserTest
         assertEquals("object", callCommand.getObject());
         assertEquals("method", callCommand.getMethod());
         assertEquals(1, callCommand.getArguments().length);
-        assertEquals(getTestObject(), callCommand.getArguments()[0]);
+        assertEquals(test, callCommand.getArguments()[0]);
         assertEquals(commandString, callCommand.toStatement(registry));
-
-        // Make sure init() was called during deserialization
-        assertEquals(flag, 1);
+        assertEquals(test, callCommand.getArguments()[0]);
+        assertEquals(true, ((TestClass)callCommand.getArguments()[0]).isValid());
     }
 
     @Test
     public void testReadNextCallCommand2()
         throws IOException, SyntaxException, NotBoundException
     {
-        // Make sure we can pass an empty set of fields to an object
-
-        final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("BlankObject", BlankClass.class);
-
-        final String commandString = "call label \"label\" object.method (BlankObject ())";
-        final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
-        final CommandParser parser = new CommandParser(in, registry);
-
-        final Command command = parser.readNextCommand();
-
-        assertTrue(command instanceof CallCommand);
-
-        final CallCommand callCommand = (CallCommand)command;
-        assertEquals("label", callCommand.getLabel());
-        assertEquals("object", callCommand.getObject());
-        assertEquals("method", callCommand.getMethod());
-        assertEquals(1, callCommand.getArguments().length);
-        assertEquals(new BlankClass(), callCommand.getArguments()[0]);
-        assertEquals(commandString, callCommand.toStatement(registry));
-    }
-
-    @Test
-    public void testReadNextCallCommand3()
-        throws IOException, SyntaxException, NotBoundException
-    {
         // Make sure we can pass an empty set of parameters to a method
 
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("TestObject", TestClass.class);
-
         final String commandString = "call label \"label\" object.method ()";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final CommandParser parser = new CommandParser(in, registry);
-
         final Command command = parser.readNextCommand();
 
         assertTrue(command instanceof CallCommand);
@@ -125,58 +86,13 @@ public class CommandParserTest
     }
 
     @Test
-    public void testReadNextCallCommand4()
-        throws IOException, SyntaxException, NotBoundException
-    {
-        // Make sure we can pass an array to a method
-
-        final DefaultClassRegistry registry = new DefaultClassRegistry();
-        registry.put("TestObject", TestClass.class);
-
-        final String commandString = "call label \"label\" object.method (" + //
-                                     "array(java.lang.Object) [" + //
-                                     "1," + //
-                                     " \"string\"," + //
-                                     " TestObject (" + //
-                                     "field1 = \"val\\\\1\"," + //
-                                     " field2 = 12L," + //
-                                     " field3 = 13.45," + //
-                                     " field4 = true," + //
-                                     " field5 = null," + //
-                                     " field6 = array(java.lang.String) []," + //
-                                     " field7 = array(java.lang.Integer) [5, 4, 3])])";
-        final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
-        final CommandParser parser = new CommandParser(in, registry);
-
-        final Command command = parser.readNextCommand();
-
-        assertTrue(command instanceof CallCommand);
-
-        final CallCommand callCommand = (CallCommand)command;
-        assertEquals("label", callCommand.getLabel());
-        assertEquals("object", callCommand.getObject());
-        assertEquals("method", callCommand.getMethod());
-        assertEquals(1, callCommand.getArguments().length);
-
-        final Object[] args = (Object[])callCommand.getArguments()[0];
-        assertEquals(1, args[0]);
-        assertEquals("string", args[1]);
-        assertEquals(getTestObject(), args[2]);
-        assertEquals(commandString, callCommand.toStatement(registry));
-    }
-
-    @Test
     public void testReadNextHelpCommand()
         throws IOException, SyntaxException
     {
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-
         final String commandString = "help";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final CommandParser parser = new CommandParser(in, registry);
-
         final Command command = parser.readNextCommand();
 
         assertTrue(command instanceof HelpCommand);
@@ -194,9 +110,7 @@ public class CommandParserTest
 
         final String commandString = "help\nhelp";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
         final CommandParser parser = new CommandParser(in, registry);
-
         final Command command1 = parser.readNextCommand();
         final Command command2 = parser.readNextCommand();
 
@@ -210,62 +124,5 @@ public class CommandParserTest
         final HelpCommand helpCommand2 = (HelpCommand)command2;
         assertEquals(null, helpCommand2.getLabel());
         assertEquals("help", helpCommand2.toStatement());
-    }
-
-    private TestClass getTestObject()
-    {
-        final TestClass testObject = new TestClass();
-        testObject.field1 = "val\\1";
-        testObject.field2 = 12;
-        testObject.field3 = 13.45;
-        testObject.field4 = true;
-        testObject.field5 = null;
-        testObject.field6 = new String[] { };
-        testObject.field7 = new Integer[] {
-            5, 4, 3
-        };
-
-        return testObject;
-    }
-
-    public static class TestClass2
-        extends TestClass
-        implements Initializable
-    {
-        public TestClass2()
-        {
-            // Nothing to do
-        }
-
-        /*
-         * (non-Javadoc)
-         * 
-         * @see net.jonp.armi.Initializable#init()
-         */
-        @Override
-        public void init()
-        {
-            CommandParserTest.flag++;
-        }
-    }
-
-    public static class BlankClass
-    {
-        public BlankClass()
-        {
-            // Nothing to do
-        }
-
-        @Override
-        public int hashCode()
-        {
-            return super.hashCode();
-        }
-
-        @Override
-        public boolean equals(final Object rhs)
-        {
-            return (null != rhs && rhs instanceof BlankClass);
-        }
     }
 }
