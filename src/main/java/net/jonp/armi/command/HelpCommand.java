@@ -37,9 +37,12 @@ public class HelpCommand
                        "  strings surrounded by \"\"\n" + //
                        "  integers or floats\n" + //
                        "  true or false\n" + //
+                       "  array [<element0>, <element1>, ...]\n" + //
                        "  <object name> (<field> = <value>, ...)\n" + //
                        "  null\n" + //
-                       "For more information, try 'call lang.getMethods (\"lang\")'";
+                       "Each command must be on one line and end with a newline." + //
+                       "For more information, try 'call lang.getMethods (\"lang\")'" + //
+                       "and 'call lang.getParameters (\"<object>.<method>\")'";
             }
         };
     }

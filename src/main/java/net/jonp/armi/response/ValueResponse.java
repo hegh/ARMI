@@ -17,16 +17,11 @@ public class ValueResponse
      * Construct a new Value.
      * 
      * @param _label The label, or <code>null</code>.
-     * @param _value The value, may not be <code>null</code>.
-     * @throws NullPointerException If <code>_value</code> is <code>null</code>.
+     * @param _value The value.
      */
     public ValueResponse(final String _label, final Object _value)
     {
         super(_label);
-
-        if (_value == null) {
-            throw new NullPointerException("_value");
-        }
 
         value = _value;
     }

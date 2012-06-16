@@ -171,6 +171,32 @@ public class CommandParserTest
         assertEquals(commandString, helpCommand.toStatement(registry));
     }
 
+    @Test
+    public void testReadNextTwoCommands()
+        throws IOException, SyntaxException
+    {
+        final DefaultClassRegistry registry = new DefaultClassRegistry();
+
+        final String commandString = "help\nhelp";
+        final InputStream in = new ByteArrayInputStream(commandString.getBytes());
+
+        final CommandParser parser = new CommandParser(in, registry);
+
+        final Command command1 = parser.readNextCommand();
+        final Command command2 = parser.readNextCommand();
+
+        assertTrue(command1 instanceof HelpCommand);
+        assertTrue(command2 instanceof HelpCommand);
+
+        final HelpCommand helpCommand1 = (HelpCommand)command1;
+        assertEquals(null, helpCommand1.getLabel());
+        assertEquals("help", helpCommand1.toStatement());
+
+        final HelpCommand helpCommand2 = (HelpCommand)command2;
+        assertEquals(null, helpCommand2.getLabel());
+        assertEquals("help", helpCommand2.toStatement());
+    }
+
     private TestClass getTestObject()
     {
         final TestClass testObject = new TestClass();

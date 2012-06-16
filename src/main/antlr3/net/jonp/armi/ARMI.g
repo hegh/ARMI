@@ -51,14 +51,14 @@ tokens {
 }
 
 command
-	: CALLTOK label? ident LPAREN arguments RPAREN -> ^(CALL label? ident arguments)
-	| HELP
+	: CALLTOK label? ident LPAREN arguments RPAREN EOF -> ^(CALL label? ident arguments)
+	| HELP EOF
 	;
 
 response
-	: RESPONSETOK label? LPAREN val RPAREN       -> ^(RESPONSE label? val)
-	| ERRORTOK label? ident LPAREN string RPAREN -> ^(ERROR label? ident string)
-	| UNSOLTOK LPAREN ident COMMA val RPAREN     -> ^(UNSOLICITED ident val)
+	: RESPONSETOK label? LPAREN val RPAREN EOF       -> ^(RESPONSE label? val)
+	| ERRORTOK label? ident LPAREN string RPAREN EOF -> ^(ERROR label? ident string)
+	| UNSOLTOK LPAREN ident COMMA val RPAREN EOF     -> ^(UNSOLICITED ident val)
 	;
 
 label

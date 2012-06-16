@@ -36,12 +36,15 @@ public class CommandParser
     /**
      * Read the next command from this parser.
      * 
-     * @return The command that was read.
+     * @return The command that was read, or <code>null</code> at EOF.
+     * @throws IOException If there was a problem reading the command.
      * @throws SyntaxException If there was a problem parsing the command.
      */
     public Command readNextCommand()
-        throws SyntaxException
+        throws IOException, SyntaxException
     {
+        parserSetup();
+
         final ARMIParser.command_return cr;
         try {
             cr = parser.command();
@@ -58,7 +61,7 @@ public class CommandParser
      * Parse the tree from a command.
      * 
      * @param ast The tree.
-     * @return The Command object.
+     * @return The Command object, or <code>null</code> at EOF.
      * @throws SyntaxException If there was a problem parsing the tree.
      */
     private Command command(final CommonTree ast)
@@ -92,7 +95,12 @@ public class CommandParser
             case ARMIParser.HELP:
                 return new HelpCommand();
             default:
-                throw new SyntaxException("Root of command is not CALL, HELP, or LIST: " + ast.getType());
+                if (ast.getType() == 0) {
+                    return null;
+                }
+                else {
+                    throw new SyntaxException("Root of command is not CALL or HELP: " + ast.getType());
+                }
         }
     }
 

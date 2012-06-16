@@ -4,8 +4,11 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.rmi.NotBoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.jonp.armi.Registry;
 
@@ -43,7 +46,9 @@ public class LangAPI
     }
 
     /**
-     * Get the names of the available methods of the named object.
+     * Get the names of the available methods of the named object. Does not
+     * include any methods specified by the {@link Object} class (these are
+     * explicitly removed).
      * 
      * @param name The name of the object whose methods to list.
      * @return The names of the methods of the given object.
@@ -53,36 +58,54 @@ public class LangAPI
     public Object[] getMethods(final String name)
         throws NotBoundException
     {
-        final Object obj = apiRegistry.lookup(name);
-        final Method[] methods = obj.getClass().getMethods();
-        final List<String> names = new ArrayList<String>(methods.length);
+        final Set<String> objectMethods = getMethods(Object.class);
+        final Set<String> methods = getMethods(apiRegistry.lookup(name).getClass());
+
+        methods.removeAll(objectMethods);
+
+        final Object[] names = methods.toArray();
+        Arrays.sort(names);
+
+        return names;
+    }
+
+    /**
+     * List the API-accessible methods of the given class. This includes all
+     * public methods.
+     * 
+     * @param clazz The class.
+     * @return The API-accessible methods of that class.
+     */
+    private Set<String> getMethods(final Class<?> clazz)
+    {
+        final Method[] methods = clazz.getMethods();
+        final Set<String> names = new HashSet<String>();
         for (final Method method : methods) {
             final int mod = method.getModifiers();
-            if ((mod & Modifier.ABSTRACT) != Modifier.ABSTRACT && (mod & Modifier.PUBLIC) == Modifier.PUBLIC &&
-                (mod & Modifier.STATIC) != Modifier.STATIC) {
+            if ((mod & Modifier.PUBLIC) == Modifier.PUBLIC) {
                 names.add(method.getName());
             }
         }
 
-        Collections.sort(names);
-
-        return names.toArray();
+        return names;
     }
 
     /**
      * Get the parameter types for the given method.
      * 
-     * @param objectName The name of the object that owns the method.
-     * @param methodName The name of the method.
+     * @param name The full name of the object and method.
      * @return The class names of the parameters of the method, in the same
      *         order.
      * @throws NotBoundException If the object name is not currently bound to
      *             any API provider object, or the object has no method with the
      *             given name.
      */
-    public Object[] getParameters(final String objectName, final String methodName)
+    public Object[] getParameters(final String name)
         throws NotBoundException
     {
+        final String objectName = name.substring(0, name.lastIndexOf('.'));
+        final String methodName = name.substring(name.lastIndexOf('.') + 1);
+
         final Object obj = apiRegistry.lookup(objectName);
         final Method[] methods = obj.getClass().getMethods();
         Method method = null;

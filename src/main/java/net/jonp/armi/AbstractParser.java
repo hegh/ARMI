@@ -1,15 +1,20 @@
 package net.jonp.armi;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.rmi.NotBoundException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.antlr.runtime.ANTLRInputStream;
+import org.antlr.runtime.ANTLRStringStream;
+import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.tree.CommonTree;
+
+import com.google.common.io.LineReader;
 
 /**
  * Superclass for command/response parsers.
@@ -18,32 +23,53 @@ public abstract class AbstractParser
 {
     protected final ARMIParser parser;
     protected final ClassRegistry registry;
+    protected final LineReader in;
 
     /**
      * Construct a new AbstractParser.
      * 
-     * @param in The stream from which to read command/response language
+     * @param _in The stream from which to read command/response language
      *            constructs.
      * @param _registry The class registry for looking up instance classes from
      *            command language names.
      * @throws IOException If there was a problem initializing the parsing
      *             framework from the stream.
      */
-    protected AbstractParser(final InputStream in, final ClassRegistry _registry)
+    protected AbstractParser(final InputStream _in, final ClassRegistry _registry)
         throws IOException
     {
-        // FIXME: ANTLRInputStream, which is descended from ANTLRStringStream,
-        // vacuums the input stream and provides data to ANTLR from the
-        // resulting buffer; this is not compatible with on-line command parsing
-        // Need to provide commands one-by-one to ANTLR, which means either
-        // writing a new ANTLR CharStream, or writing something like
-        // MUXInputStream which is more flexible, as it needs to pre-parse the
-        // command stream
-        final ANTLRInputStream charStream = new ANTLRInputStream(in);
+        in = new LineReader(new InputStreamReader(_in));
+        parser = new ARMIParser(null);
+        registry = _registry;
+    }
+
+    /**
+     * Get the {@link ClassRegistry} used by this parser.
+     * 
+     * @return The class registry.
+     */
+    public ClassRegistry getClassRegistry()
+    {
+        return registry;
+    }
+
+    /**
+     * Sets up the parser to read the next message.
+     * 
+     * @throws IOException If there was a problem.
+     */
+    protected void parserSetup()
+        throws IOException
+    {
+        final String line = in.readLine();
+        if (line == null) {
+            throw new EOFException();
+        }
+
+        final CharStream charStream = new ANTLRStringStream(line);
         final ARMILexer lexer = new ARMILexer(charStream);
         final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        parser = new ARMIParser(tokenStream);
-        registry = _registry;
+        parser.setTokenStream(tokenStream);
     }
 
     /**

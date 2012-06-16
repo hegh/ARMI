@@ -36,12 +36,15 @@ public class ResponseParser
     /**
      * Read the next response.
      * 
-     * @return The Response object that was read.
+     * @return The Response object that was read, or <code>null</code> at EOF.
+     * @throws IOException If there was a problem reading the response.
      * @throws SyntaxException If there was a problem parsing the response.
      */
     public Response readNextResponse()
-        throws SyntaxException
+        throws IOException, SyntaxException
     {
+        parserSetup();
+
         final ARMIParser.response_return r;
         try {
             r = parser.response();
@@ -58,7 +61,7 @@ public class ResponseParser
      * Parse the tree from a top-level response.
      * 
      * @param ast The tree.
-     * @return The Response object.
+     * @return The Response object, or <code>null</code> at EOF.
      * @throws SyntaxException If there was a problem parsing the tree.
      */
     private Response generalResponse(final CommonTree ast)
@@ -72,7 +75,12 @@ public class ResponseParser
             case ARMIParser.UNSOLICITED:
                 return unsolicited(ast);
             default:
-                throw new SyntaxException("Root of response is not RESPONSE or ERROR: " + ast.getType());
+                if (ast.getType() == 0) {
+                    return null;
+                }
+                else {
+                    throw new SyntaxException("Root of response is not RESPONSE or ERROR: " + ast.getType());
+                }
         }
     }
 

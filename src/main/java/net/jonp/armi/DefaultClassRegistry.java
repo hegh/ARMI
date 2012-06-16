@@ -23,6 +23,14 @@ public class DefaultClassRegistry
     }
 
     /**
+     * Clear all entries from this class registry.
+     */
+    public void clear()
+    {
+        map.clear();
+    }
+
+    /**
      * Put a name/class pair into this registry.
      * 
      * @param name The name.
