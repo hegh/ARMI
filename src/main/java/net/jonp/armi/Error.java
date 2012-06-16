@@ -65,23 +65,36 @@ public class Error
     @Override
     public String toString()
     {
-        return String.format("%s", message);
+        return String.format("%s[%s]", exception, message);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * A wrapper around {@link #toStatement(ClassRegistry)} that passes
+     * <code>null</code> for the {@link ClassRegistry} argument.
      * 
-     * @see net.jonp.armi.AbstractLanguageObject#toStatement()
+     * @return The statement form of this Error.
+     */
+    public String toStatement()
+    {
+        return toStatement(null);
+    }
+
+    /**
+     * Convert this Error into a legal statement in the command/response
+     * language.
+     * 
+     * @param registry Ignored.
+     * @return The statement.
      */
     @Override
-    public String toStatement()
+    public String toStatement(final ClassRegistry registry)
     {
         final StringBuilder buf = new StringBuilder();
 
         buf.append("error ");
 
         if (label != null) {
-            buf.append("\"").append(label).append("\" ");
+            buf.append("label \"").append(label).append("\" ");
         }
 
         buf.append(exception).append(" ");

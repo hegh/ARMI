@@ -16,13 +16,15 @@ public class CommandParser
      * Construct a new CommandParser.
      * 
      * @param in The stream from which to read commands.
+     * @param _registry The class registry for looking up instance classes from
+     *            command language names.
      * @throws IOException If there was a problem initializing the command
      *             parsing framework with the stream.
      */
-    public CommandParser(final InputStream in)
+    public CommandParser(final InputStream in, final ClassRegistry _registry)
         throws IOException
     {
-        super(in);
+        super(in, _registry);
     }
 
     /**
@@ -34,7 +36,7 @@ public class CommandParser
     public Command readNextCommand()
         throws CommandException
     {
-        ARMIParser.command_return cr;
+        final ARMIParser.command_return cr;
         try {
             cr = parser.command();
         }

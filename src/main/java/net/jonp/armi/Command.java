@@ -1,5 +1,7 @@
 package net.jonp.armi;
 
+import java.rmi.NotBoundException;
+
 /**
  * Represents a command, which is a method call with an optional label.
  */
@@ -78,7 +80,8 @@ public class Command
      * @see net.jonp.armi.AbstractLanguageObject#toStatement()
      */
     @Override
-    public String toStatement()
+    public String toStatement(final ClassRegistry registry)
+        throws NotBoundException
     {
         final StringBuilder buf = new StringBuilder();
 
@@ -91,7 +94,7 @@ public class Command
         buf.append(object).append(".").append(method).append(" (");
         for (int i = 0; i < arguments.length; i++) {
             final Object arg = arguments[i];
-            buf.append(makeArgument(arg));
+            buf.append(makeArgument(arg, registry));
 
             if (i < arguments.length - 1) {
                 buf.append(", ");

@@ -2,13 +2,15 @@ package net.jonp.armi;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.rmi.NotBoundException;
 
 /**
  * Superclass for objects which can be represented by the command/response
- * language.
+ * language (i.e. commands and responses).
  */
 public abstract class AbstractLanguageObject
 {
+    /** The label on this communication, or <code>null</code>. */
     protected final String label;
 
     /**
@@ -35,9 +37,14 @@ public abstract class AbstractLanguageObject
      * Convert this object into a legal statement in the command/response
      * language.
      * 
+     * @param registry The ClassRegistry to use when building the statement.
      * @return The statement.
+     * @throws NotBoundException If, during compilation, an object's class is
+     *             not a command language primitive, and is not in the
+     *             {@link #registry} is encountered.
      */
-    public abstract String toStatement();
+    public abstract String toStatement(ClassRegistry registry)
+        throws NotBoundException;
 
     // FUTURE: Have makeArgument() call getters/setters
 
@@ -47,10 +54,14 @@ public abstract class AbstractLanguageObject
      * @param arg The object. All non-static, non-transient, non-final, public
      *            fields will be serialized, recursing into other objects as
      *            necessary. No getters/setters will be called.
+     * @param registry The Class Registry to use when building the argument.
      * @return A string serialization of an object, which is a legal statement
      *         in the command/response language.
+     * @throws NotBoundException If the object's class is not a command language
+     *             primitive, and is not in the {@link #registry}.
      */
-    protected String makeArgument(final Object arg)
+    protected String makeArgument(final Object arg, final ClassRegistry registry)
+        throws NotBoundException
     {
         final StringBuilder buf = new StringBuilder();
         if (arg instanceof Number) {
@@ -63,16 +74,24 @@ public abstract class AbstractLanguageObject
             buf.append(arg.toString());
         }
         else {
-            buf.append(arg.getClass().getName()).append(" (");
+            buf.append(registry.reverseLookup(arg.getClass())).append(" (");
             final Field[] fields = arg.getClass().getFields();
+            boolean first = true;
             for (final Field field : fields) {
                 if (((field.getModifiers() & Modifier.PUBLIC) == Modifier.PUBLIC) &&
                     ((field.getModifiers() & Modifier.FINAL) != Modifier.FINAL) &&
                     ((field.getModifiers() & Modifier.TRANSIENT) != Modifier.TRANSIENT) &&
                     ((field.getModifiers() & Modifier.STATIC) != Modifier.STATIC)) {
 
+                    if (first) {
+                        first = false;
+                    }
+                    else {
+                        buf.append(", ");
+                    }
+
                     try {
-                        buf.append(makeArgument(field.get(arg)));
+                        buf.append(field.getName()).append(" = ").append(makeArgument(field.get(arg), registry));
                     }
                     catch (final IllegalAccessException iae) {
                         // Should not happen, since we verified it is public
@@ -81,6 +100,7 @@ public abstract class AbstractLanguageObject
                     }
                 }
             }
+            buf.append(")");
         }
 
         return buf.toString();

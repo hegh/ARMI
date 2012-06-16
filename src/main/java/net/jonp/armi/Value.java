@@ -1,5 +1,7 @@
 package net.jonp.armi;
 
+import java.rmi.NotBoundException;
+
 /**
  * Represents a value returned by a response.
  */
@@ -53,17 +55,18 @@ public class Value
      * @see net.jonp.armi.AbstractLanguageObject#toStatement()
      */
     @Override
-    public String toStatement()
+    public String toStatement(final ClassRegistry registry)
+        throws NotBoundException
     {
         final StringBuilder buf = new StringBuilder();
 
         buf.append("response ");
 
         if (label != null) {
-            buf.append("\"").append(label).append("\" ");
+            buf.append("label \"").append(label).append("\" ");
         }
 
-        buf.append("(").append(makeArgument(value)).append(")");
+        buf.append("(").append(makeArgument(value, registry)).append(")");
 
         return buf.toString();
     }

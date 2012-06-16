@@ -16,13 +16,15 @@ public class ResponseParser
      * Parses responses to commands.
      * 
      * @param in The stream from which to read the responses.
+     * @param _registry The class registry for looking up instance classes from
+     *            command language names.
      * @throws IOException If there was a problem integrating the stream into
      *             the response parsing framework.
      */
-    public ResponseParser(final InputStream in)
+    public ResponseParser(final InputStream in, final ClassRegistry _registry)
         throws IOException
     {
-        super(in);
+        super(in, _registry);
     }
 
     /**

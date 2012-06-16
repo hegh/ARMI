@@ -3,6 +3,7 @@ package net.jonp.armi;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.rmi.NotBoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,22 +17,26 @@ import org.antlr.runtime.tree.CommonTree;
 public abstract class AbstractParser
 {
     protected final ARMIParser parser;
+    protected final ClassRegistry registry;
 
     /**
      * Construct a new AbstractParser.
      * 
      * @param in The stream from which to read command/response language
      *            constructs.
+     * @param _registry The class registry for looking up instance classes from
+     *            command language names.
      * @throws IOException If there was a problem initializing the parsing
      *             framework from the stream.
      */
-    protected AbstractParser(final InputStream in)
+    protected AbstractParser(final InputStream in, final ClassRegistry _registry)
         throws IOException
     {
         final ANTLRInputStream charStream = new ANTLRInputStream(in);
         final ARMILexer lexer = new ARMILexer(charStream);
         final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         parser = new ARMIParser(tokenStream);
+        registry = _registry;
     }
 
     /**
@@ -252,15 +257,15 @@ public abstract class AbstractParser
         throws CommandException
     {
         final Class<?> clazz;
-        final Object instance;
 
         try {
-            clazz = Class.forName(className);
+            clazz = registry.lookup(className);
         }
-        catch (final ClassNotFoundException cnfe) {
-            throw new CommandException("Unable to locate referenced class " + className + ": " + cnfe.getMessage(), cnfe);
+        catch (final NotBoundException nbe) {
+            throw new CommandException("Unable to locate referenced class " + className + ": " + nbe.getMessage(), nbe);
         }
 
+        final Object instance;
         try {
             instance = clazz.newInstance();
         }
@@ -278,7 +283,32 @@ public abstract class AbstractParser
             for (final Map.Entry<String, Object> entry : fields.entrySet()) {
                 fieldName = entry.getKey();
                 final Field field = clazz.getField(fieldName);
-                field.set(instance, entry.getValue());
+
+                // Do some quick conversions (long to int, short, or byte;
+                // double to float)
+                Object value = entry.getValue();
+                if (value instanceof Long) {
+                    final Long l = (Long)value;
+
+                    if (field.getType().isInstance(Integer.class) || field.getType().equals(int.class)) {
+                        value = Integer.valueOf(l.intValue());
+                    }
+                    else if (field.getType().isInstance(Short.class) || field.getType().equals(short.class)) {
+                        value = Short.valueOf(l.shortValue());
+                    }
+                    else if (field.getType().isInstance(Byte.class) || field.getType().equals(byte.class)) {
+                        value = Byte.valueOf(l.byteValue());
+                    }
+                }
+                else if (value instanceof Double) {
+                    final Double d = (Double)value;
+
+                    if (field.getType().isInstance(Float.class) || field.getType().equals(float.class)) {
+                        value = Float.valueOf(d.floatValue());
+                    }
+                }
+
+                field.set(instance, value);
             }
         }
         catch (final NoSuchFieldException nsfe) {
