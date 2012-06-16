@@ -69,8 +69,6 @@ public class ResponseParser
                 return response(ast);
             case ARMIParser.ERROR:
                 return error(ast);
-            case ARMIParser.LIST:
-                return list(ast);
             case ARMIParser.UNSOLICITED:
                 return unsolicited(ast);
             default:
@@ -146,40 +144,6 @@ public class ResponseParser
         }
 
         return new ErrorResponse(label, Conversion.arrayToString(path, "."), message);
-    }
-
-    /**
-     * Parse the tree from a List response.
-     * 
-     * @param ast The tree.
-     * @return The ListResponse object.
-     * @throws SyntaxException If there was a problem parsing the tree.
-     */
-    private ListResponse list(final CommonTree ast)
-        throws SyntaxException
-    {
-        if (ast.getType() != ARMIParser.LIST) {
-            throw new SyntaxException("Root of list response is not LIST: " + ast.getType());
-        }
-
-        String label = null;
-        String[] values = null;
-
-        for (final Object childAST : ast.getChildren()) {
-            final CommonTree child = (CommonTree)childAST;
-            switch (child.getType()) {
-                case ARMIParser.LABEL:
-                    label = label(child);
-                    break;
-                case ARMIParser.STRINGS:
-                    values = strings(child);
-                    break;
-                default:
-                    throw new SyntaxException("Illegal child of LIST: " + child.getType());
-            }
-        }
-
-        return new ListResponse(label, values);
     }
 
     /**

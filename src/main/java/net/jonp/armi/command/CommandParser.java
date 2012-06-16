@@ -91,48 +91,9 @@ public class CommandParser
             }
             case ARMIParser.HELP:
                 return new HelpCommand();
-            case ARMIParser.LIST:
-                return list(ast);
             default:
                 throw new SyntaxException("Root of command is not CALL, HELP, or LIST: " + ast.getType());
         }
-    }
-
-    /**
-     * Parse the tree from a LIST command.
-     * 
-     * @param ast The tree.
-     * @return The List command.
-     * @throws SyntaxException If there was a problem parsing the tree.
-     */
-    private ListCommand list(final CommonTree ast)
-        throws SyntaxException
-    {
-        if (ast.getType() != ARMIParser.LIST) {
-            throw new SyntaxException("Not a LIST: " + ast.getType());
-        }
-
-        String label = null;
-        String object = null;
-
-        for (final Object childAST : ast.getChildren()) {
-            final CommonTree child = (CommonTree)childAST;
-            switch (child.getType()) {
-                case ARMIParser.LABEL:
-                    label = label(child);
-                    break;
-                case ARMIParser.METHODS:
-                    object = Conversion.arrayToString(ident((CommonTree)child.getChild(0)), ".");
-                    break;
-                case ARMIParser.OBJECTS:
-                    object = null;
-                    break;
-                default:
-                    throw new SyntaxException("Child of LIST is not LABEL, METHODS, or OBJECTS: " + child.getType());
-            }
-        }
-
-        return new ListCommand(label, object);
     }
 
     /**

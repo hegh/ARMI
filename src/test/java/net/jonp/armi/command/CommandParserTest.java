@@ -171,48 +171,6 @@ public class CommandParserTest
         assertEquals(commandString, helpCommand.toStatement(registry));
     }
 
-    @Test
-    public void testReadNextListObjectsCommand()
-        throws IOException, SyntaxException
-    {
-        final DefaultClassRegistry registry = new DefaultClassRegistry();
-
-        final String commandString = "list objects";
-        final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
-        final CommandParser parser = new CommandParser(in, registry);
-
-        final Command command = parser.readNextCommand();
-
-        assertTrue(command instanceof ListCommand);
-
-        final ListCommand listCommand = (ListCommand)command;
-        assertEquals(null, listCommand.getLabel());
-        assertEquals(null, listCommand.getObject());
-        assertEquals(commandString, listCommand.toStatement(registry));
-    }
-
-    @Test
-    public void testReadNextListMethodsCommand()
-        throws IOException, SyntaxException
-    {
-        final DefaultClassRegistry registry = new DefaultClassRegistry();
-
-        final String commandString = "list label \"label\" methods TestObject";
-        final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
-        final CommandParser parser = new CommandParser(in, registry);
-
-        final Command command = parser.readNextCommand();
-
-        assertTrue(command instanceof ListCommand);
-
-        final ListCommand listCommand = (ListCommand)command;
-        assertEquals("label", listCommand.getLabel());
-        assertEquals("TestObject", listCommand.getObject());
-        assertEquals(commandString, listCommand.toStatement(registry));
-    }
-
     private TestClass getTestObject()
     {
         final TestClass testObject = new TestClass();

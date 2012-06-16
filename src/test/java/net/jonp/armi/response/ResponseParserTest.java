@@ -1,6 +1,5 @@
 package net.jonp.armi.response;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
@@ -95,40 +94,6 @@ public class ResponseParserTest
         assertEquals("java.lang.Exception", error.getException());
         assertEquals(commandString, error.toStatement());
         assertEquals("java.lang.Exception[Error message]", error.toString());
-    }
-
-    /**
-     * Test method for
-     * {@link net.jonp.armi.response.ResponseParser#readNextResponse()}.
-     * 
-     * @throws IOException If there is a was a problem building the response
-     *             parser.
-     * @throws SyntaxException If there was a problem parsing the response.
-     * @throws NotBoundException If there was a problem with the class registry.
-     */
-    @Test
-    public void testReadNextList()
-        throws IOException, SyntaxException, NotBoundException
-    {
-        final DefaultClassRegistry registry = new DefaultClassRegistry();
-
-        final String commandString = "list label \"label\" (\"object1\", \"object2\")";
-        final InputStream in = new ByteArrayInputStream(commandString.getBytes());
-
-        final ResponseParser parser = new ResponseParser(in, registry);
-
-        final Response response = parser.readNextResponse();
-
-        assertEquals("label", response.getLabel());
-
-        assertEquals(true, response instanceof ListResponse);
-        final ListResponse list = (ListResponse)response;
-
-        assertArrayEquals(new String[] {
-            "object1", "object2"
-        }, list.getValues());
-        assertEquals(commandString, list.toStatement(registry));
-        assertEquals("list{object1, object2}", list.toString());
     }
 
     /**

@@ -16,11 +16,8 @@ tokens {
 	HELP = 'help';
 	LABELTOK = 'label';
 	LBRACKET = '[';
-	LIST = 'list';
 	LPAREN = '(';
-	METHODS = 'methods';
 	NIL = 'null';
-	OBJECTS = 'objects';
 	RBRACKET = ']';
 	RESPONSETOK = 'response';
 	RPAREN = ')';
@@ -42,7 +39,6 @@ tokens {
 	OBJ;
 	RESPONSE;
 	STR;
-	STRINGS;
 	UNSOLICITED;
 }
 
@@ -57,18 +53,11 @@ tokens {
 command
 	: CALLTOK label? ident LPAREN arguments RPAREN -> ^(CALL label? ident arguments)
 	| HELP
-	| LIST label? list -> ^(LIST label? list)
-	;
-
-list
-	: OBJECTS       -> ^(OBJECTS)
-	| METHODS ident -> ^(METHODS ident)
 	;
 
 response
 	: RESPONSETOK label? LPAREN val RPAREN       -> ^(RESPONSE label? val)
 	| ERRORTOK label? ident LPAREN string RPAREN -> ^(ERROR label? ident string)
-	| LIST label? LPAREN stringlist RPAREN       -> ^(LIST label? stringlist)
 	| UNSOLTOK LPAREN ident COMMA val RPAREN     -> ^(UNSOLICITED ident val)
 	;
 
@@ -87,11 +76,6 @@ arguments
 
 argument
 	: val -> ^(ARG val)
-	;
-
-stringlist
-	: string (COMMA string)* -> ^(STRINGS string string*)
-	| -> ^(STRINGS)
 	;
 
 val

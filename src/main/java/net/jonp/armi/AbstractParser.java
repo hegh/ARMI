@@ -116,33 +116,6 @@ public abstract class AbstractParser
     }
 
     /**
-     * Parse the tree from a strings.
-     * 
-     * @param ast The tree.
-     * @return The string array.
-     * @throws SyntaxException If there was a problem parsing the tree.
-     */
-    protected String[] strings(final CommonTree ast)
-        throws SyntaxException
-    {
-        if (ast.getType() != ARMIParser.STRINGS) {
-            throw new SyntaxException("Not a STRINGS: " + ast.getType());
-        }
-
-        final String[] values = new String[ast.getChildCount()];
-        if (values.length > 0) {
-            // Otherwise, ast.getChildren() may be null
-            int i = 0;
-            for (final Object childAST : ast.getChildren()) {
-                final CommonTree child = (CommonTree)childAST;
-                values[i++] = str(child);
-            }
-        }
-
-        return values;
-    }
-
-    /**
      * Parse the tree from a str.
      * 
      * @param ast The tree.

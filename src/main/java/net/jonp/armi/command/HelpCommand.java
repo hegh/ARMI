@@ -32,14 +32,14 @@ public class HelpCommand
             {
                 return "call [label \"<label>\"] <object>.<method> (<value>, ...)\n" + //
                        "help\n" + //
-                       "list {objects|methods <object>}\n" + //
                        "\n" + //
                        "<value> can be:\n" + //
                        "  strings surrounded by \"\"\n" + //
                        "  integers or floats\n" + //
                        "  true or false\n" + //
                        "  <object name> (<field> = <value>, ...)\n" + //
-                       "  null\n";
+                       "  null\n" + //
+                       "For more information, try 'call lang.getMethods (\"lang\")'";
             }
         };
     }
