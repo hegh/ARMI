@@ -37,7 +37,7 @@ public class HelpCommand
                        "  strings surrounded by \"\"\n" + //
                        "  integers or floats\n" + //
                        "  true or false\n" + //
-                       "  array [<element0>, <element1>, ...]\n" + //
+                       "  array(<type>) [<element0>, <element1>, ...]\n" + //
                        "  <object name> (<field> = <value>, ...)\n" + //
                        "  null\n" + //
                        "Each command must be on one line and end with a newline." + //

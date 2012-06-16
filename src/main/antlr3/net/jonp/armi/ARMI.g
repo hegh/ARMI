@@ -101,7 +101,7 @@ bool
 	;
 
 array
-	: ARRAYTOK LBRACKET elements RBRACKET -> ^(ARRAY elements)
+	: ARRAYTOK LPAREN ident RPAREN LBRACKET elements RBRACKET -> ^(ARRAY ident elements)
 	;
 
 object

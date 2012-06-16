@@ -40,8 +40,14 @@ public class ResponseParserTest
         final DefaultClassRegistry registry = new DefaultClassRegistry();
         registry.put("TestObject", TestClass2.class);
 
-        final String commandString =
-            "response label \"label\" (TestObject (field1 = \"val1\", field2 = 12, field3 = 13.45, field4 = true, field5 = array [\"string\", 1, 2.3, true]))";
+        final String commandString = "response label \"label\" (TestObject (" + //
+                                     "field1 = \"val1\"," + //
+                                     " field2 = 12," + //
+                                     " field3 = 13.45," + //
+                                     " field4 = true," + //
+                                     " field5 = array(java.lang.Object) [\"string\", 1, 2.3, true]," + //
+                                     " field6 = null," + //
+                                     " field7 = array(java.lang.Integer) []))";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
 
         final ResponseParser parser = new ResponseParser(in, registry);
@@ -56,7 +62,7 @@ public class ResponseParserTest
 
         assertEquals(getTestObject(), value.getValue());
         assertEquals(commandString, value.toStatement(registry));
-        assertEquals("TestClass(val1, 12, 13.450000, true, [string, 1, 2.3, true])", value.toString());
+        assertEquals("TestClass(val1, 12, 13.450000, true, [string, 1, 2.3, true], null, [])", value.toString());
 
         // Make sure init() was called during deserialization
         assertEquals(flag, 1);
@@ -139,6 +145,8 @@ public class ResponseParserTest
         testObject.field5 = new Object[] {
             "string", 1L, 2.3, true
         };
+        testObject.field6 = null;
+        testObject.field7 = new Integer[] { };
 
         return testObject;
     }

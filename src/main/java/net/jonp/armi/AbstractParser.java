@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.rmi.NotBoundException;
 import java.util.HashMap;
@@ -222,11 +223,19 @@ public abstract class AbstractParser
             throw new SyntaxException("Not an ARRAY: " + ast.getType());
         }
 
-        if (ast.getChildCount() != 1) {
-            throw new SyntaxException("ARRAY childCount != 1: " + ast.getChildCount());
+        if (ast.getChildCount() != 2) {
+            throw new SyntaxException("ARRAY childCount != 2: " + ast.getChildCount());
         }
 
-        return elements((CommonTree)ast.getChild(0));
+        final String[] ident = ident((CommonTree)ast.getChild(0));
+        final String className = Conversion.arrayToString(ident, ".");
+        final Class<?> clazz = findClass(className);
+
+        // FUTURE: Check for primitive types and built appropriate arrays
+        final Object[] elements = elements((CommonTree)ast.getChild(1));
+        final Object[] objects = convertArray(elements, clazz);
+
+        return objects;
     }
 
     /**
@@ -344,25 +353,8 @@ public abstract class AbstractParser
     protected Object buildObject(final String className, final Map<String, Object> fields)
         throws SyntaxException
     {
-        final Class<?> clazz;
-
-        try {
-            clazz = registry.lookup(className);
-        }
-        catch (final NotBoundException nbe) {
-            throw new SyntaxException("Unable to locate referenced class " + className + ": " + nbe.getMessage(), nbe);
-        }
-
-        final Object instance;
-        try {
-            instance = clazz.newInstance();
-        }
-        catch (final InstantiationException ie) {
-            throw new SyntaxException("Cannot instantiate referenced class " + className + ": " + ie.getMessage(), ie);
-        }
-        catch (final IllegalAccessException iae) {
-            throw new SyntaxException("Cannot access reference class constructor " + className + ": " + iae.getMessage(), iae);
-        }
+        final Class<?> clazz = findClass(className);
+        final Object instance = newObject(clazz);
 
         // FUTURE: Look for set methods and use them rather than fields
 
@@ -421,5 +413,100 @@ public abstract class AbstractParser
         }
 
         return instance;
+    }
+
+    /**
+     * Locate a class from the class registry.
+     * 
+     * @param className The name of the class to locate.
+     * @return The class associated with that name.
+     * @throws SyntaxException If the class could not be found.
+     */
+    protected Class<?> findClass(final String className)
+        throws SyntaxException
+    {
+        final Class<?> clazz;
+        try {
+            clazz = registry.lookup(className);
+        }
+        catch (final NotBoundException nbe) {
+            throw new SyntaxException("Unable to locate referenced class " + className + ": " + nbe.getMessage(), nbe);
+        }
+
+        return clazz;
+    }
+
+    /**
+     * Construct a new instance of a class, using its no-argument constructor.
+     * 
+     * @param clazz The class of the object to create.
+     * @return The new instance of the class.
+     * @throws SyntaxException If there is an error instantiating the class,
+     *             including the class not having an accessible no-argument
+     *             constructor or that constructor throwing an exception.
+     */
+    protected Object newObject(final Class<?> clazz)
+        throws SyntaxException
+    {
+        final Object instance;
+        try {
+            instance = clazz.newInstance();
+        }
+        catch (final InstantiationException ie) {
+            throw new SyntaxException("Cannot instantiate referenced class " + clazz.getName() + ": " + ie.getMessage(), ie);
+        }
+        catch (final IllegalAccessException iae) {
+            throw new SyntaxException("Cannot access referenced class constructor " + clazz.getName() + ": " + iae.getMessage(),
+                                      iae);
+        }
+
+        return instance;
+    }
+
+    /**
+     * Given an array of objects of any type, convert it to an array of objects
+     * of a specific type. This expects all numeric values to be represented by
+     * either {@link Long} or {@link Double}, and not any smaller type; it will
+     * convert appropriately to the smaller types.
+     * 
+     * @param elements The array of objects to convert.
+     * @param clazz The component class for the new array.
+     * @return The converted array.
+     */
+    protected Object[] convertArray(final Object[] elements, final Class<?> clazz)
+    {
+        if (Object.class.equals(clazz)) {
+            // Don't actually need to do anything
+            return elements;
+        }
+
+        final Object[] objects = (Object[])Array.newInstance(clazz, elements.length);
+
+        final Class<?> type = clazz;
+        if (Integer.class.equals(type)) {
+            for (int i = 0; i < elements.length; i++) {
+                objects[i] = ((Number)elements[i]).intValue();
+            }
+        }
+        else if (Short.class.equals(type)) {
+            for (int i = 0; i < elements.length; i++) {
+                objects[i] = ((Number)elements[i]).shortValue();
+            }
+        }
+        else if (Byte.class.equals(type)) {
+            for (int i = 0; i < elements.length; i++) {
+                objects[i] = ((Number)elements[i]).byteValue();
+            }
+        }
+        else if (Float.class.equals(type)) {
+            for (int i = 0; i < elements.length; i++) {
+                objects[i] = ((Number)elements[i]).floatValue();
+            }
+        }
+        else {
+            System.arraycopy(elements, 0, objects, 0, elements.length);
+        }
+
+        return objects;
     }
 }

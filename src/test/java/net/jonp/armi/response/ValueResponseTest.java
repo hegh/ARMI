@@ -27,9 +27,14 @@ public class ValueResponseTest
         final DefaultClassRegistry registry = new DefaultClassRegistry();
         registry.put("TestObject", TestClass.class);
 
-        final String expected =
-            "response label \"label\" (TestObject"
-                + " (field1 = \"val1\", field2 = 12, field3 = 13.45, field4 = true, field5 = array [\"string\"]))";
+        final String expected = "response label \"label\" (TestObject" + //
+                                " (field1 = \"val1\"," + //
+                                " field2 = 12," + //
+                                " field3 = 13.45," + //
+                                " field4 = true," + //
+                                " field5 = null," + //
+                                " field6 = array(java.lang.String) []," + //
+                                " field7 = array(java.lang.Integer) [5, 4, 3]))";
         final ValueResponse value = getTestValue();
 
         assertEquals(expected, value.toStatement(registry));
@@ -81,8 +86,10 @@ public class ValueResponseTest
         testObject.field2 = 12;
         testObject.field3 = 13.45;
         testObject.field4 = true;
-        testObject.field5 = new Object[] {
-            "string"
+        testObject.field5 = null;
+        testObject.field6 = new String[] { };
+        testObject.field7 = new Integer[] {
+            5, 4, 3
         };
 
         return testObject;

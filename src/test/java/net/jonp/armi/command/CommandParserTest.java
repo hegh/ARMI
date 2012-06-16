@@ -43,8 +43,14 @@ public class CommandParserTest
         final DefaultClassRegistry registry = new DefaultClassRegistry();
         registry.put("TestObject", TestClass2.class);
 
-        final String commandString =
-            "call label \"label\" object.method (TestObject (field1 = \"val1\", field2 = 12, field3 = 13.45, field4 = true, field5 = array [\"test\"]))";
+        final String commandString = "call label \"label\" object.method (" + //
+                                     "TestObject (field1 = \"val\\\\1\"," + //
+                                     " field2 = 12," + //
+                                     " field3 = 13.45," + //
+                                     " field4 = true," + //
+                                     " field5 = null," + //
+                                     " field6 = array(java.lang.String) []," + //
+                                     " field7 = array(java.lang.Integer) [5, 4, 3]))";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
 
         final CommandParser parser = new CommandParser(in, registry);
@@ -127,9 +133,18 @@ public class CommandParserTest
         final DefaultClassRegistry registry = new DefaultClassRegistry();
         registry.put("TestObject", TestClass.class);
 
-        final String commandString =
-            "call label \"label\" object.method (array [1, \"string\", TestObject ("
-                + "field1 = \"val1\", field2 = 12, field3 = 13.45, field4 = true, field5 = array [\"test\"])])";
+        final String commandString = "call label \"label\" object.method (" + //
+                                     "array(java.lang.Object) [" + //
+                                     "1," + //
+                                     " \"string\"," + //
+                                     " TestObject (" + //
+                                     "field1 = \"val\\\\1\"," + //
+                                     " field2 = 12," + //
+                                     " field3 = 13.45," + //
+                                     " field4 = true," + //
+                                     " field5 = null," + //
+                                     " field6 = array(java.lang.String) []," + //
+                                     " field7 = array(java.lang.Integer) [5, 4, 3])])";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
 
         final CommandParser parser = new CommandParser(in, registry);
@@ -200,12 +215,14 @@ public class CommandParserTest
     private TestClass getTestObject()
     {
         final TestClass testObject = new TestClass();
-        testObject.field1 = "val1";
+        testObject.field1 = "val\\1";
         testObject.field2 = 12;
         testObject.field3 = 13.45;
         testObject.field4 = true;
-        testObject.field5 = new Object[] {
-            "test"
+        testObject.field5 = null;
+        testObject.field6 = new String[] { };
+        testObject.field7 = new Integer[] {
+            5, 4, 3
         };
 
         return testObject;

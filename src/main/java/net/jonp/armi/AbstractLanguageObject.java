@@ -86,8 +86,16 @@ public abstract class AbstractLanguageObject
         else if (arg instanceof Boolean) {
             buf.append(arg.toString());
         }
-        else if (arg instanceof Object[]) {
-            buf.append("array [");
+        else if (arg.getClass().isArray()) {
+            // FUTURE: Once primitive array deserialization is implemented,
+            // remove this check
+            if (arg.getClass().getComponentType().isPrimitive()) {
+                throw new IllegalArgumentException("Arrays of primitive types are not supported");
+            }
+
+            buf.append("array(");
+            buf.append(arg.getClass().getComponentType().getName());
+            buf.append(") [");
             final Object[] elements = (Object[])arg;
             boolean first = true;
             for (final Object element : elements) {
