@@ -36,16 +36,16 @@ public class HelpCommand
                        "<value> can be:\n" + //
                        "  strings surrounded by \"\"\n" + //
                        "  integers or floats with type postfix\n" + //
-                       "    B for Byte, S for Short, L for Long, F for Float" + //
-                       "    Integer and Double do not have type postfixes" + //
+                       "    B for Byte, S for Short, L for Long, F for Float\n" + //
+                       "    Integer and Double do not have type postfixes\n" + //
                        "  true or false\n" + //
                        "  array(<type>) [<element0>, <element1>, ...]\n" + //
                        "  collection(<type>) [<element0>, <element1>, ...]\n" + //
                        "  map(<type>) [<key0> = <value0>, <key1> = <value1>, ...]\n" + //
                        "  <object name> (<field> = <value>, ...)\n" + //
                        "  null\n" + //
-                       "Each command must be on one line and end with a newline." + //
-                       "For more information, try 'call lang.getMethods (\"lang\")'" + //
+                       "Each command must be on one line and end with a newline.\n" + //
+                       "For more information, try 'call lang.getMethods (\"lang\")'\n" + //
                        "and 'call lang.getParameters (\"<object>.<method>\")'";
             }
         };
@@ -76,8 +76,7 @@ public class HelpCommand
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * net.jonp.armi.AbstractLanguageObject#toStatement(net.jonp.ms5.
+     * @see net.jonp.armi.AbstractLanguageObject#toStatement(net.jonp.ms5.
      * command.ClassRegistry)
      */
     @Override
