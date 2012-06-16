@@ -7,12 +7,17 @@
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>net.jonp.armi</groupId>
-  <artifactId>armi</artifactId>
+  <artifactId>armi_superpom</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <packaging>pom</packaging>
   
-  <name>armi</name>
-  <description>Alternative RMI</description>
+  <name>armi superpom</name>
+  <description>Superpom for ARMI</description>
+
+  <modules>
+    <module>armi</module>
+    <module>example</module>
+  </modules>
   
   <dependencies>
     <dependency>
@@ -25,16 +30,6 @@
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.16</version>
-    </dependency>
-    <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr-runtime</artifactId>
-        <version>3.3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>r09</version>
     </dependency>
   </dependencies>
 
@@ -62,21 +57,6 @@
           <downloadJavadocs>true</downloadJavadocs>
           <downloadSources>true</downloadSources>
         </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr3-maven-plugin</artifactId>
-        <version>3.3</version>
-        <executions>
-          <execution>
-            <id>antlrgen</id>
-            <goals>
-              <goal>antlr</goal>
-            </goals>
-            <phase>generate-sources</phase>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
