@@ -52,7 +52,7 @@ tokens {
 
 command
 	: CALLTOK label? ident LPAREN arguments RPAREN EOF -> ^(CALL label? ident arguments)
-	| HELP EOF
+	| HELP EOF                                         -> ^(HELP)
 	;
 
 response
