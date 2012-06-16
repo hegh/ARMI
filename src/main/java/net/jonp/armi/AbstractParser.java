@@ -29,7 +29,7 @@ public abstract class AbstractParser
         throws IOException
     {
         final ANTLRInputStream charStream = new ANTLRInputStream(in);
-        final ARMILexer lexer = new MSCommandLexer(charStream);
+        final ARMILexer lexer = new ARMILexer(charStream);
         final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         parser = new ARMIParser(tokenStream);
     }

@@ -6,62 +6,47 @@ package net.jonp.armi;
 public class Command
     extends AbstractLanguageObject
 {
-    private final String[] path;
+    private final String object;
+    private final String method;
     private final Object[] arguments;
 
     /**
      * Construct a new Command.
      * 
      * @param _label The label, or <code>null</code>.
-     * @param _path The "path" of package and object identifiers, which should
-     *            terminate in a method name.
+     * @param _object The name of the object whose method is being referenced.
+     * @param _method The name of the method.
      * @param _arguments The arguments to pass to the method.
      */
-    public Command(final String _label, final String[] _path, final Object[] _arguments)
+    public Command(final String _label, final String _object, final String _method, final Object[] _arguments)
     {
         super(_label);
 
-        path = new String[_path.length];
-        System.arraycopy(_path, 0, path, 0, path.length);
+        object = _object;
+        method = _method;
 
         arguments = new Object[_arguments.length];
         System.arraycopy(_arguments, 0, arguments, 0, arguments.length);
     }
 
     /**
-     * Get the path though the packages and objects, not including the final
-     * method name.
+     * Get the name of the object.
      * 
-     * @return The full path minus the last element (the method name).
+     * @return The name of the object (does not include the method name).
      */
-    public String[] getPartialPath()
+    public String getObject()
     {
-        final String[] _path = new String[path.length - 1];
-        System.arraycopy(path, 0, _path, 0, path.length - 1);
-        return _path;
+        return object;
     }
 
     /**
-     * Get the full path through the packages and objects, including the final
-     * method name.
-     * 
-     * @return The full path, including the method name.
-     */
-    public String[] getPath()
-    {
-        final String[] _path = new String[path.length];
-        System.arraycopy(path, 0, _path, 0, path.length);
-        return _path;
-    }
-
-    /**
-     * Get the name of the method, which is the last piece of the path.
+     * Get the name of the method.
      * 
      * @return The name of the method.
      */
-    public String getMethodName()
+    public String getMethod()
     {
-        return path[path.length - 1];
+        return method;
     }
 
     /**
@@ -84,7 +69,7 @@ public class Command
     @Override
     public String toString()
     {
-        return String.format("%s(%s)", Conversion.arrayToString(path, "."), Conversion.arrayToString(arguments, ", "));
+        return String.format("%s.%s(%s)", object, method, Conversion.arrayToString(arguments, ", "));
     }
 
     /*
@@ -103,7 +88,7 @@ public class Command
             buf.append("label \"").append(label).append("\" ");
         }
 
-        buf.append(Conversion.arrayToString(arguments, ".")).append(" (");
+        buf.append(object).append(".").append(method).append(" (");
         for (int i = 0; i < arguments.length; i++) {
             final Object arg = arguments[i];
             buf.append(makeArgument(arg));

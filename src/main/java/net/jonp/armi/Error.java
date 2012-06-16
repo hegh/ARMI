@@ -6,45 +6,45 @@ package net.jonp.armi;
 public class Error
     extends Response
 {
+    private final String exception;
     private final String message;
-    private final String[] path;
 
     /**
      * Construct a new Error response.
      * 
      * @param _label The label, or <code>null</code>.
-     * @param _path The path to the exception that raised this error. The
-     *            exception must have a constructor matching
+     * @param _exception The class name of the exception that raised this error.
+     *            The exception must have a constructor matching
      *            {@link Exception#Exception(String)}. May not be
      *            <code>null</code>.
      * @param _message The error message. May not be <code>null</code>.
      * @throws NullPointerException If <code>_path</code> or
      *             <code>_message</code> is <code>null</code>.
      */
-    public Error(final String _label, final String[] _path, final String _message)
+    public Error(final String _label, final String _exception, final String _message)
     {
         super(_label);
+
+        if (_exception == null) {
+            throw new NullPointerException("_exception");
+        }
 
         if (_message == null) {
             throw new NullPointerException("_message");
         }
 
-        path = new String[_path.length];
-        System.arraycopy(_path, 0, path, 0, path.length);
-
+        exception = _exception;
         message = _message;
     }
 
     /**
-     * Get the package path to the exception that raised this error.
+     * Get the class name of the exception that raised this error.
      * 
-     * @return The path to the exception.
+     * @return The class name of the exception.
      */
-    public String[] getPath()
+    public String getException()
     {
-        final String[] _path = new String[path.length];
-        System.arraycopy(path, 0, _path, 0, path.length);
-        return _path;
+        return exception;
     }
 
     /**
@@ -84,7 +84,7 @@ public class Error
             buf.append("\"").append(label).append("\" ");
         }
 
-        buf.append(Conversion.arrayToString(path, ".")).append(" ");
+        buf.append(exception).append(" ");
         buf.append("(\"").append(message).append("\")");
 
         return buf.toString();

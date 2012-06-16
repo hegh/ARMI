@@ -133,6 +133,6 @@ public class ResponseParser
             }
         }
 
-        return new Error(label, path, message);
+        return new Error(label, Conversion.arrayToString(path, "."), message);
     }
 }

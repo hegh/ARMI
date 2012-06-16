@@ -81,7 +81,7 @@ public class CommandParser
             }
         }
 
-        return new Command(label, path, args);
+        return new Command(label, Conversion.arrayToString(path, 0, path.length - 1, "."), path[path.length - 1], args);
     }
 
     /**
