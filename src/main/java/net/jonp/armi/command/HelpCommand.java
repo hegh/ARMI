@@ -38,6 +38,8 @@ public class HelpCommand
                        "  integers or floats\n" + //
                        "  true or false\n" + //
                        "  array(<type>) [<element0>, <element1>, ...]\n" + //
+                       "  collection(<type>) [<element0>, <element1>, ...]\n" + //
+                       "  map(<type>) [<key0> = <value0>, <key1> = <value1>, ...]\n" + //
                        "  <object name> (<field> = <value>, ...)\n" + //
                        "  null\n" + //
                        "Each command must be on one line and end with a newline." + //

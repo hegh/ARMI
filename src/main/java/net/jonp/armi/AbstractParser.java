@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.rmi.NotBoundException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -133,6 +135,10 @@ public abstract class AbstractParser
                 return bool(ast);
             case ARMIParser.ARRAY:
                 return array(ast);
+            case ARMIParser.COLLECTION:
+                return collection(ast);
+            case ARMIParser.MAP:
+                return map(ast);
             case ARMIParser.OBJ:
                 return obj(ast);
             case ARMIParser.NIL:
@@ -236,6 +242,96 @@ public abstract class AbstractParser
         final Object[] objects = convertArray(elements, clazz);
 
         return objects;
+    }
+
+    /**
+     * Parse the tree from a collection.
+     * 
+     * @param ast The tree.
+     * @return A collection of the specified type with the specified elements.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    protected Collection<?> collection(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.COLLECTION) {
+            throw new SyntaxException("Not a COLLECTION: " + ast.getType());
+        }
+
+        if (ast.getChildCount() != 2) {
+            throw new SyntaxException("COLLECTION childCount != 2: " + ast.getChildCount());
+        }
+
+        final String[] ident = ident((CommonTree)ast.getChild(0));
+        final Object[] elements = elements((CommonTree)ast.getChild(1));
+
+        final String className = Conversion.arrayToString(ident, ".");
+        final Class<?> clazz = findClass(className);
+
+        // FIXME: This collection may contain objects of a different type than
+        // what was originally serialized, as numbers will now be either Longs
+        // or Doubles, and not any smaller type
+        // We cannot convert, either, because we don't know what the original
+        // type was (due to generic type erasure)
+        final Collection<Object> collection = Utils.cast(newObject(clazz));
+        Collections.addAll(collection, elements);
+
+        return collection;
+    }
+
+    /**
+     * Parse the tree from a map.
+     * 
+     * @param ast The tree.
+     * @return A map of the specified type with the specified key/value pairs.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    protected Map<?, ?> map(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.MAP) {
+            throw new SyntaxException("Not a MAP: " + ast.getType());
+        }
+
+        if (ast.getChildCount() != 2) {
+            throw new SyntaxException("MAP childCount != 2: " + ast.getChildCount());
+        }
+
+        final String[] ident = ident((CommonTree)ast.getChild(0));
+        final String className = Conversion.arrayToString(ident, ".");
+        final Class<?> clazz = findClass(className);
+
+        final CommonTree mapvals = (CommonTree)ast.getChild(1);
+        if (mapvals.getType() != ARMIParser.MAPVALS) {
+            throw new SyntaxException("Not a MAPVALS: " + mapvals.getType());
+        }
+
+        final Map<Object, Object> map = Utils.cast(newObject(clazz));
+        if (mapvals.getChildCount() > 0) {
+            // If 0, getChildren() will return null
+            for (final Object childAST : mapvals.getChildren()) {
+                final CommonTree mapval = (CommonTree)childAST;
+
+                if (mapval.getType() != ARMIParser.MAPVAL) {
+                    throw new SyntaxException("Not a MAPVAL: " + mapval.getType());
+                }
+
+                if (mapval.getChildCount() != 2) {
+                    throw new SyntaxException("MAPVAL childCount != 2: " + mapval.getChildCount());
+                }
+
+                // FIXME: This map may contain objects of a different type than
+                // what was originally serialized, as numbers will now be either
+                // Longs or Doubles, and not any smaller type
+                // We cannot convert, either, because we don't know what the
+                // original type was (due to generic type erasure)
+                final Object key = val((CommonTree)mapval.getChild(0));
+                final Object value = val((CommonTree)mapval.getChild(1));
+                map.put(key, value);
+            }
+        }
+
+        return map;
     }
 
     /**

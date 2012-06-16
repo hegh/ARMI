@@ -8,6 +8,7 @@ options {
 tokens {
 	ARRAYTOK = 'array';
 	CALLTOK = 'call';
+	COLLECTIONTOK = 'collection';
 	COMMA = ',';
 	DOT = '.';
 	EQUALS = '=';
@@ -17,6 +18,7 @@ tokens {
 	LABELTOK = 'label';
 	LBRACKET = '[';
 	LPAREN = '(';
+	MAPTOK = 'map';
 	NIL = 'null';
 	RBRACKET = ']';
 	RESPONSETOK = 'response';
@@ -29,12 +31,16 @@ tokens {
 	ARRAY;
 	BOOL;
 	CALL;
+	COLLECTION;
 	ELEMENTS;
 	ERROR;
 	FIELD;
 	FIELDS;
 	IDENT;
 	LABEL;
+	MAP;
+	MAPVAL;
+	MAPVALS;
 	NUM;
 	OBJ;
 	RESPONSE;
@@ -83,6 +89,8 @@ val
 	| number
 	| bool
 	| array
+	| collection
+	| map
 	| object
 	| NIL
 	;
@@ -104,6 +112,14 @@ array
 	: ARRAYTOK LPAREN ident RPAREN LBRACKET elements RBRACKET -> ^(ARRAY ident elements)
 	;
 
+collection
+	: COLLECTIONTOK LPAREN ident RPAREN LBRACKET elements RBRACKET -> ^(COLLECTION ident elements)
+	;
+
+map
+	: MAPTOK LPAREN ident RPAREN LBRACKET mapvals RBRACKET -> ^(MAP ident mapvals)
+	;
+
 object
 	: ident LPAREN fields RPAREN -> ^(OBJ ident fields)
 	;
@@ -120,6 +136,15 @@ field
 elements
 	: val (COMMA val)* -> ^(ELEMENTS val val*)
 	| -> ^(ELEMENTS)
+	;
+
+mapvals
+	: mapval (COMMA mapval)* -> ^(MAPVALS mapval mapval*)
+	| -> ^(MAPVALS)
+	;
+
+mapval
+	: val EQUALS val -> ^(MAPVAL val val)
 	;
 
 STRING

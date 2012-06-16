@@ -3,6 +3,8 @@ package net.jonp.armi;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.rmi.NotBoundException;
+import java.util.Collection;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -107,6 +109,42 @@ public abstract class AbstractLanguageObject
                 }
 
                 buf.append(makeArgument(element, registry));
+            }
+            buf.append("]");
+        }
+        else if (arg instanceof Collection) {
+            buf.append("collection(");
+            buf.append(arg.getClass().getName());
+            buf.append(") [");
+            boolean first = true;
+            for (final Object element : (Collection<?>)arg) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    buf.append(", ");
+                }
+
+                buf.append(makeArgument(element, registry));
+            }
+            buf.append("]");
+        }
+        else if (arg instanceof Map) {
+            buf.append("map(");
+            buf.append(arg.getClass().getName());
+            buf.append(") [");
+            boolean first = true;
+            for (final Map.Entry<?, ?> entry : ((Map<?, ?>)arg).entrySet()) {
+                if (first) {
+                    first = false;
+                }
+                else {
+                    buf.append(", ");
+                }
+
+                buf.append(makeArgument(entry.getKey(), registry));
+                buf.append(" = ");
+                buf.append(makeArgument(entry.getValue(), registry));
             }
             buf.append("]");
         }
