@@ -29,44 +29,6 @@ public class Utils
     }
 
     /**
-     * Turn a normal iterator into a read-only iterator of the same type.
-     * 
-     * @param <E> The iterator type.
-     * @param it The iterator to make read-only.
-     * @return A read-only wrapper around the iterator.
-     */
-    public static <E> Iterator<E> readOnlyIterator(final Iterator<E> it)
-    {
-        return new Iterator<E>() {
-            @Override
-            public boolean hasNext()
-            {
-                return it.hasNext();
-            }
-
-            @Override
-            public E next()
-            {
-                return it.next();
-            }
-
-            @Override
-            public void remove()
-            {
-                throw new UnsupportedOperationException("Cannot remove elements from a read-only iterator.");
-            }
-        };
-    }
-
-    /** Get the name of the calling class. */
-    public static String thisClassName()
-    {
-        final Throwable th = new Throwable();
-        th.fillInStackTrace();
-        return th.getStackTrace()[1].getClassName();
-    }
-
-    /**
      * Read an InputStream until EOF, and return an array of all the bytes that
      * were read.
      * 
