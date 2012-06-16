@@ -22,18 +22,18 @@ public abstract class AbstractLanguageObject
     private static final Logger LOG = Logger.getLogger(AbstractLanguageObject.class);
 
     /** The label on this communication, or <code>null</code>. */
-    protected final String label;
+    protected String _label;
 
     /**
      * Construct a new AbstractLanguageObject.
      * 
-     * @param _label The label, or <code>null</code>. The label <code>*</code>
-     *            is used for the response when a command has a syntax error and
+     * @param label The label, or <code>null</code>. The label <code>*</code> is
+     *            used for the response when a command has a syntax error and
      *            cannot be parsed, and should not be used otherwise.
      */
-    protected AbstractLanguageObject(final String _label)
+    protected AbstractLanguageObject(final String label)
     {
-        label = _label;
+        _label = label;
     }
 
     /**
@@ -43,7 +43,17 @@ public abstract class AbstractLanguageObject
      */
     public String getLabel()
     {
-        return label;
+        return _label;
+    }
+
+    /**
+     * Set the label.
+     * 
+     * @param label The new label.
+     */
+    public void setLabel(final String label)
+    {
+        _label = label;
     }
 
     /**
