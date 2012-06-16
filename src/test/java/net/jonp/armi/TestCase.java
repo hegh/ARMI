@@ -44,6 +44,16 @@ public abstract class TestCase
             new ArrayTestClass(true)
         });
 
+        // 5
+        params.add(new Object[] {
+            new CollectionTestClass(true)
+        });
+
+        // 6
+        params.add(new Object[] {
+            new MapTestClass(true)
+        });
+
         return params;
     }
 }
