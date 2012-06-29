@@ -6,8 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-import net.jonp.armi.base.Conversion;
-
 
 /**
  * Used to test serialization with array fields.
@@ -19,18 +17,18 @@ public class MapTestClass
     public static final String NAME = "MapTestObject";
 
     public static final String COMMAND = "MapTestObject (" + //
-                                         "hashmap = map(java.util.HashMap) [" + //
-                                         "\"TestKey\" = \"TestValue\"]," + //
-                                         " nestedlinkedhashmap = map(java.util.LinkedHashMap) [" + //
+                                         MapTestClass.class.getName() + ".hashmap = map(java.util.HashMap) [" + //
+                                         "\"TestKey\" = \"TestValue\"], " + //
+                                         MapTestClass.class.getName() + ".nestedlinkedhashmap = map(java.util.LinkedHashMap) [" + //
                                          "1 = map(java.util.LinkedHashMap) [" + //
                                          "\"TrueKey\" = true," + //
                                          " \"FalseKey\" = false," + //
                                          " \"NullKey\" = null," + //
                                          " null = null]," + //
                                          " 2 = map(java.util.Hashtable) [" + //
-                                         "\"OnlyKey\" = true]]," + //
-                                         " nullmap = null," + //
-                                         " treemap = map(java.util.TreeMap) [" + //
+                                         "\"OnlyKey\" = ref 8]], " + //
+                                         MapTestClass.class.getName() + ".nullmap = null, " + //
+                                         MapTestClass.class.getName() + ".treemap = map(java.util.TreeMap) [" + //
                                          "\"5 billion\" = 5000000000L," + //
                                          " \"One\" = 1L])";
 

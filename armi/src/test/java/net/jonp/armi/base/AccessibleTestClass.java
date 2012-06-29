@@ -1,6 +1,5 @@
 package net.jonp.armi.base;
 
-import net.jonp.armi.base.Initializable;
 
 
 /**
@@ -13,10 +12,10 @@ public class AccessibleTestClass
     public static final String NAME = "AccessTestObject";
 
     public static final String COMMAND = "AccessTestObject (" + //
-                                         "defaultfield = 15," + //
-                                         " finalfield = 1," + //
-                                         " privatefield = -225," + //
-                                         " protectedfield = 84)";
+                                         AccessibleTestClass.class.getName() + ".defaultfield = 15, " + //
+                                         AccessibleTestClass.class.getName() + ".finalfield = 1, " + //
+                                         AccessibleTestClass.class.getName() + ".privatefield = -225, " + //
+                                         AccessibleTestClass.class.getName() + ".protectedfield = 84)";
 
     public static final String STRING = "AccessibleTestClass(1, 84, 15, -225)";
 

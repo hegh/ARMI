@@ -10,11 +10,6 @@ import java.rmi.NotBoundException;
 import net.jonp.armi.base.SyntaxException;
 import net.jonp.armi.base.TestCase;
 import net.jonp.armi.base.TestClass;
-import net.jonp.armi.base.response.ErrorResponse;
-import net.jonp.armi.base.response.Response;
-import net.jonp.armi.base.response.ResponseParser;
-import net.jonp.armi.base.response.UnsolicitedResponse;
-import net.jonp.armi.base.response.ValueResponse;
 import net.jonp.armi.comm.DefaultClassRegistry;
 
 import org.junit.Test;
@@ -78,7 +73,11 @@ public class ResponseParserTest
         throws IOException, SyntaxException, NotBoundException
     {
         final DefaultClassRegistry registry = new DefaultClassRegistry();
-        final String commandString = "error java.lang.Exception (\"Error message\")";
+        final String commandString = "error (java.lang.Exception" + //
+                                     " (java.lang.Throwable.cause = ref 0," + //
+                                     " java.lang.Throwable.detailMessage = \"Error message\"," + //
+                                     " java.lang.Throwable.stackTrace = array(java.lang.StackTraceElement) []," + //
+                                     " java.lang.Throwable.suppressedExceptions = null))";
         final InputStream in = new ByteArrayInputStream(commandString.getBytes());
         final ResponseParser parser = new ResponseParser(in, registry);
         final Response response = parser.readNextResponse();
@@ -88,9 +87,9 @@ public class ResponseParserTest
         assertEquals(true, response instanceof ErrorResponse);
         final ErrorResponse error = (ErrorResponse)response;
 
-        assertEquals("java.lang.Exception", error.getException());
-        assertEquals(commandString, error.toStatement());
-        assertEquals("java.lang.Exception[Error message]", error.toString());
+        assertEquals("java.lang.Exception", error.getException().getClass().getName());
+        assertEquals(commandString, error.toStatement(registry));
+        assertEquals("Exception[Error message]", error.toString());
     }
 
     /**

@@ -2,8 +2,9 @@ package net.jonp.armi.base.response;
 
 import static org.junit.Assert.assertEquals;
 
-import net.jonp.armi.base.AbstractLanguageObject;
-import net.jonp.armi.base.response.ErrorResponse;
+import java.rmi.NotBoundException;
+
+import net.jonp.armi.comm.DefaultClassRegistry;
 
 import org.junit.Test;
 
@@ -13,49 +14,50 @@ import org.junit.Test;
 public class ErrorResponseTest
 {
     /**
-     * Test method for {@link net.jonp.armi.base.response.ErrorResponse#toStatement()}.
+     * Test method for
+     * {@link net.jonp.armi.base.response.ErrorResponse#toStatement()}.
      */
     @Test
     public void testToStatement()
+        throws NotBoundException
     {
-        final String expected = "error label \"label\" java.lang.Exception (\"Message text\")";
+        // This is, unfortunately, very ugly, but Exceptions have a bunch of
+        // hidden fields
+        final String expected = "error label \"label\" (java.lang.Exception" + //
+                                " (java.lang.Throwable.cause = ref 0," + //
+                                " java.lang.Throwable.detailMessage = \"Message text\"," + //
+                                " java.lang.Throwable.stackTrace = array(java.lang.StackTraceElement) []," + //
+                                " java.lang.Throwable.suppressedExceptions = collection(java.util.Collections$UnmodifiableRandomAccessList) []))";
         final ErrorResponse error = getTestError();
 
-        assertEquals(expected, error.toStatement());
+        final DefaultClassRegistry registry = new DefaultClassRegistry();
+        assertEquals(expected, error.toStatement(registry));
     }
 
     /**
-     * Test method for {@link net.jonp.armi.base.response.ErrorResponse#getException()}
-     * .
+     * Test method for
+     * {@link net.jonp.armi.base.response.ErrorResponse#getException()} .
      */
     @Test
     public void testGetException()
     {
-        final String expected = "java.lang.Exception";
+        final Exception expected = new Exception("Message text");
         final ErrorResponse error = getTestError();
 
-        assertEquals(expected, error.getException());
+        // Can't use .equals() for exceptions, so assertEquals() on its own
+        // doesn't work
+        assertEquals(expected.getClass(), error.getException().getClass());
+        assertEquals(expected.getMessage(), error.getException().getMessage());
     }
 
     /**
-     * Test method for {@link net.jonp.armi.base.response.ErrorResponse#getMessage()}.
-     */
-    @Test
-    public void testGetMessage()
-    {
-        final String expected = "Message text";
-        final ErrorResponse error = getTestError();
-
-        assertEquals(expected, error.getMessage());
-    }
-
-    /**
-     * Test method for {@link net.jonp.armi.base.response.ErrorResponse#toString()}.
+     * Test method for
+     * {@link net.jonp.armi.base.response.ErrorResponse#toString()}.
      */
     @Test
     public void testToString()
     {
-        final String expected = "java.lang.Exception[Message text]";
+        final String expected = "Exception[Message text]";
         final ErrorResponse error = getTestError();
 
         assertEquals(expected, error.toString());
@@ -76,6 +78,6 @@ public class ErrorResponseTest
 
     private ErrorResponse getTestError()
     {
-        return new ErrorResponse("label", "java.lang.Exception", "Message text");
+        return new ErrorResponse("label", new Exception("Message text"));
     }
 }

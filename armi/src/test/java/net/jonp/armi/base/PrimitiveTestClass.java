@@ -11,14 +11,14 @@ public class PrimitiveTestClass
     public static final String NAME = "PrimitiveTestObject";
 
     public static final String COMMAND = "PrimitiveTestObject (" + //
-                                         "booleanfield = true," + //
-                                         " bytefield = -5Y," + //
-                                         " doublefield = 3.141592653589793," + //
-                                         " floatfield = -3.1415927F," + //
-                                         " intfield = 1048576," + //
-                                         " longfield = 8589934592L," + //
-                                         " shortfield = 325T," + //
-                                         " stringfield = \"\\\"string\\\\value\\\"\")";
+                                         PrimitiveTestClass.class.getName() + ".booleanfield = true, " + //
+                                         PrimitiveTestClass.class.getName() + ".bytefield = -5Y, " + //
+                                         PrimitiveTestClass.class.getName() + ".doublefield = 3.141592653589793, " + //
+                                         PrimitiveTestClass.class.getName() + ".floatfield = -3.1415927F, " + //
+                                         PrimitiveTestClass.class.getName() + ".intfield = 1048576, " + //
+                                         PrimitiveTestClass.class.getName() + ".longfield = 8589934592L, " + //
+                                         PrimitiveTestClass.class.getName() + ".shortfield = 325T, " + //
+                                         PrimitiveTestClass.class.getName() + ".stringfield = \"\\\"string\\\\value\\\"\")";
 
     public static final String STRING =
         "PrimitiveTestClass(true, -5, 325, 1048576, 8589934592, -3.141593, 3.141593, \"string\\value\")";

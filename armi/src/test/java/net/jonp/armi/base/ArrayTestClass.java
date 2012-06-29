@@ -2,8 +2,6 @@ package net.jonp.armi.base;
 
 import java.util.Arrays;
 
-import net.jonp.armi.base.Conversion;
-
 /**
  * Used to test serialization with array fields.
  */
@@ -13,22 +11,20 @@ public class ArrayTestClass
 {
     public static final String NAME = "ArrayTestObject";
 
-    public static final String COMMAND = "ArrayTestObject (" + //
-                                         "intarray = array(java.lang.Integer) [3, 5, 7]," + //
-                                         " nestedarray = array(java.lang.Object) [" + //
-                                         "\"String1\"," + //
-                                         " 2," + //
-                                         " 3.4," + //
-                                         " array(java.lang.Object) [" + //
-                                         "\"Sub1\"," + //
-                                         " array(java.lang.String) [" + //
-                                         "\"SubSub1\"," + //
-                                         " null," + //
-                                         " \"SubSub2\"]," + //
-                                         " \"Sub2\"]," + //
-                                         " true]," + //
-                                         " nullarray = null," + //
-                                         " stringarray = array(java.lang.String) [\"s1\", \"s2\", \"s3\"])";
+    public static final String COMMAND = "ArrayTestObject (" +
+                                         //
+                                         ArrayTestClass.class.getName() +
+                                         ".intarray = array(java.lang.Integer) [3, 5, 7], " +
+                                         //
+                                         ArrayTestClass.class.getName() + ".nestedarray = array(java.lang.Object) [" +
+                                         "\"String1\", 2, 3.4, array(java.lang.Object) [" +
+                                         "\"Sub1\", array(java.lang.String) [\"SubSub1\", null, \"SubSub2\"]," + " \"Sub2\"]," +
+                                         " true], " +
+                                         //
+                                         ArrayTestClass.class.getName() + ".nullarray = null, " +
+                                         //
+                                         ArrayTestClass.class.getName() +
+                                         ".stringarray = array(java.lang.String) [\"s1\", \"s2\", \"s3\"])";
 
     public static final String STRING =
         "ArrayTestClass([3, 5, 7], [s1, s2, s3], null, [String1, 2, 3.4, [Sub1, [SubSub1, null, SubSub2], Sub2], true])";

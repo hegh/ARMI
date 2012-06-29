@@ -9,8 +9,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import net.jonp.armi.base.Conversion;
-
 
 /**
  * Used to test serialization with array fields.
@@ -21,14 +19,19 @@ public class CollectionTestClass
 {
     public static final String NAME = "CollectionTestObject";
 
-    public static final String COMMAND = "CollectionTestObject (" + //
-                                         "intlist = collection(java.util.LinkedList) [1, 1, 2, 3, 5, 8, 13, 21]," + //
-                                         " nestedlist = collection(java.util.ArrayList) [" + //
-                                         "collection(java.util.Vector) [8.0F, 16.0F]," + //
-                                         " collection(java.util.ArrayList) [2.0F, 32.0F]," + //
-                                         " collection(java.util.LinkedList) []]," + //
-                                         " nullcollection = null," + //
-                                         " stringset = collection(java.util.TreeSet) [\"First\", \"Second\", \"Third\"])";
+    public static final String COMMAND = "CollectionTestObject (" +
+                                         //
+                                         CollectionTestClass.class.getName() + ".intlist =" +
+                                         " collection(java.util.LinkedList) [1, ref 2, 2, 3, 5, 8, 13, 21], " +
+                                         CollectionTestClass.class.getName() + ".nestedlist = collection(java.util.ArrayList) [" +
+                                         "collection(java.util.Vector) [8.0F, 16.0F]," +
+                                         " collection(java.util.ArrayList) [2.0F, 32.0F]," +
+                                         " collection(java.util.LinkedList) []], " +
+                                         //
+                                         CollectionTestClass.class.getName() + ".nullcollection = null, " +
+                                         //
+                                         CollectionTestClass.class.getName() +
+                                         ".stringset = collection(java.util.TreeSet) [\"First\", \"Second\", \"Third\"])";
 
     public static final String STRING =
         "CollectionTestClass([1, 1, 2, 3, 5, 8, 13, 21], [[8.0, 16.0], [2.0, 32.0], []], [First, Second, Third], null)";
