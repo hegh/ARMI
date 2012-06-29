@@ -54,6 +54,11 @@ public abstract class TestCase
             new MapTestClass(true)
         });
 
+        // 7
+        params.add(new Object[] {
+            new SuperclassTestClass(true)
+        });
+
         return params;
     }
 }
