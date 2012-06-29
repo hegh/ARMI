@@ -20,11 +20,12 @@ public class DefaultClassRegistry
 
     /**
      * Construct a new {@link DefaultClassRegistry} that will fall back onto the
-     * {@link Runtime} {@link ClassLoader}.
+     * system classloader ({@link ClassLoader#getSystemClassLoader()}).
      */
     public DefaultClassRegistry()
     {
-        this(Runtime.class.getClassLoader());
+        // FIXME: This sometimes comes out as NULL
+        this(ClassLoader.getSystemClassLoader());
     }
 
     /**
