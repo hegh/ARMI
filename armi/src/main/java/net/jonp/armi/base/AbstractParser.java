@@ -7,9 +7,11 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.rmi.NotBoundException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.jonp.armi.ARMILexer;
@@ -30,6 +32,12 @@ public abstract class AbstractParser
     protected final ARMIParser parser;
     protected final ClassRegistry registry;
     protected final LineReader in;
+
+    /**
+     * Each value that we deserialize goes in here, including back-references
+     * and nulls.
+     */
+    protected final List<Object> indexedValues = new ArrayList<Object>();
 
     /**
      * Construct a new AbstractParser.
@@ -76,6 +84,7 @@ public abstract class AbstractParser
         final ARMILexer lexer = new ARMILexer(charStream);
         final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         parser.setTokenStream(tokenStream);
+        indexedValues.clear();
     }
 
     /**
@@ -120,7 +129,7 @@ public abstract class AbstractParser
     }
 
     /**
-     * Parse the tree of a val (str, num, bool, or obj).
+     * Parse the tree of a val (str, num, bool, obj, ...).
      * 
      * @param ast The tree.
      * @return The value.
@@ -129,26 +138,52 @@ public abstract class AbstractParser
     protected Object val(final CommonTree ast)
         throws SyntaxException
     {
+        final Object obj;
+
+        // If the handler function adds to indexedValues, we don't want to do
+        // the same
+        boolean indexed = false;
         switch (ast.getType()) {
             case ARMIParser.STR:
-                return str(ast);
+                obj = str(ast);
+                break;
             case ARMIParser.NUM:
-                return num(ast);
+                obj = num(ast);
+                break;
             case ARMIParser.BOOL:
-                return bool(ast);
+                obj = bool(ast);
+                break;
             case ARMIParser.ARRAY:
-                return array(ast);
+                indexed = true;
+                obj = array(ast);
+                break;
             case ARMIParser.COLLECTION:
-                return collection(ast);
+                indexed = true;
+                obj = collection(ast);
+                break;
             case ARMIParser.MAP:
-                return map(ast);
+                indexed = true;
+                obj = map(ast);
+                break;
             case ARMIParser.OBJ:
-                return obj(ast);
+                indexed = true;
+                obj = obj(ast);
+                break;
+            case ARMIParser.REF:
+                obj = indexedValues.get(ref(ast));
+                break;
             case ARMIParser.NIL:
-                return null;
+                obj = null;
+                break;
             default:
                 throw new SyntaxException("Unknown VAL type: " + ast.getType());
         }
+
+        if (!indexed) {
+            indexedValues.add(obj);
+        }
+
+        return obj;
     }
 
     /**
@@ -256,8 +291,7 @@ public abstract class AbstractParser
         final Class<?> clazz = findClass(className);
 
         // FUTURE: Check for primitive types and built appropriate arrays
-        final Object[] elements = elements((CommonTree)ast.getChild(1));
-        final Object[] objects = convertArray(elements, clazz);
+        final Object[] objects = elements(clazz, true, (CommonTree)ast.getChild(1));
 
         return objects;
     }
@@ -281,12 +315,13 @@ public abstract class AbstractParser
         }
 
         final String[] ident = ident((CommonTree)ast.getChild(0));
-        final Object[] elements = elements((CommonTree)ast.getChild(1));
-
         final String className = Conversion.arrayToString(ident, ".");
         final Class<?> clazz = findClass(className);
-
         final Collection<Object> collection = Utils.cast(newObject(clazz));
+        indexedValues.add(collection);
+
+        final Object[] elements = elements(Object.class, false, (CommonTree)ast.getChild(1));
+
         Collections.addAll(collection, elements);
 
         return collection;
@@ -320,6 +355,8 @@ public abstract class AbstractParser
         }
 
         final Map<Object, Object> map = Utils.cast(newObject(clazz));
+        indexedValues.add(map);
+
         if (mapvals.getChildCount() > 0) {
             // If 0, getChildren() will return null
             for (final Object childAST : mapvals.getChildren()) {
@@ -345,18 +382,26 @@ public abstract class AbstractParser
     /**
      * Parse the tree from an elements.
      * 
+     * @param clazz The component class for the array to return.
+     * @param index True to add the array object to {@link #indexedValues}
+     *            before parsing elements, false not to.
      * @param ast The tree.
      * @return The elements.
      * @throws SyntaxException If there was a problem parsing the tree.
      */
-    protected Object[] elements(final CommonTree ast)
+    protected Object[] elements(final Class<?> clazz, final boolean index, final CommonTree ast)
         throws SyntaxException
     {
         if (ast.getType() != ARMIParser.ELEMENTS) {
             throw new SyntaxException("Not an ELEMENTS: " + ast.getType());
         }
 
-        final Object[] elements = new Object[ast.getChildCount()];
+        final Object[] elements = newArray(clazz, ast.getChildCount());
+
+        if (index) {
+            indexedValues.add(elements);
+        }
+
         if (ast.getChildCount() > 0) {
             // When 0, getChildren() returns null
             int i = 0;
@@ -389,9 +434,29 @@ public abstract class AbstractParser
         }
 
         final String[] ident = ident((CommonTree)ast.getChild(0));
-        final Map<String, Object> fields = fields((CommonTree)ast.getChild(1));
+        return buildObject(Conversion.arrayToString(ident, "."), (CommonTree)ast.getChild(1));
+    }
 
-        return buildObject(Conversion.arrayToString(ident, "."), fields);
+    /**
+     * Parse the tree from a ref.
+     * 
+     * @param ast The tree.
+     * @return The object.
+     * @throws SyntaxException If there was a problem parsing the tree.
+     */
+    protected int ref(final CommonTree ast)
+        throws SyntaxException
+    {
+        if (ast.getType() != ARMIParser.REF) {
+            throw new SyntaxException("Not a REF: " + ast.getType());
+        }
+
+        if (ast.getChildCount() != 1) {
+            throw new SyntaxException("REF childCount != 1: " + ast.getChildCount());
+        }
+
+        final int idx = Integer.valueOf(ast.getChild(0).getText());
+        return idx;
     }
 
     /**
@@ -438,7 +503,8 @@ public abstract class AbstractParser
             throw new SyntaxException("FIELD childCount != 2: " + ast.getChildCount());
         }
 
-        final String name = ast.getChild(0).getText();
+        final String[] ident = ident((CommonTree)ast.getChild(0));
+        final String name = Conversion.arrayToString(ident, ".");
         final Object val = val((CommonTree)ast.getChild(1));
 
         fields.put(name, val);
@@ -448,25 +514,29 @@ public abstract class AbstractParser
      * Build an object, given a class name and map of field values.
      * 
      * @param className The name of the class to construct.
-     * @param fields A map of field names onto field values.
+     * @param ast The tree pointing at the fields for this object.
      * @return The object.
      * @throws SyntaxException If there was a problem constructing the object,
      *             setting its fields, or calling {@link Initializable#init()},
      *             if it applies.
      */
-    protected Object buildObject(final String className, final Map<String, Object> fields)
+    protected Object buildObject(final String className, final CommonTree ast)
         throws SyntaxException
     {
         final Class<?> clazz = findClass(className);
         final Object instance = newObject(clazz);
 
-        // FUTURE: Look for set methods and use them rather than fields
+        // This needs to be in the list of indexed values BEFORE we can continue
+        // reading fields, in case any of the fields is a circular reference
+        indexedValues.add(instance);
+
+        final Map<String, Object> fields = fields(ast);
 
         String fieldName = null;
         try {
             for (final Map.Entry<String, Object> entry : fields.entrySet()) {
                 fieldName = entry.getKey();
-                final Field field = clazz.getDeclaredField(fieldName);
+                final Field field = findField(clazz, fieldName);
                 field.setAccessible(true);
 
                 final Object value = entry.getValue();
@@ -546,23 +616,53 @@ public abstract class AbstractParser
     }
 
     /**
-     * Given an array of objects of any type, convert it to an array of objects
-     * of a specific type.
+     * Build a new array of the given component type and length.
      * 
-     * @param elements The array of objects to convert.
      * @param clazz The component class for the new array.
      * @return The converted array.
      */
-    protected Object[] convertArray(final Object[] elements, final Class<?> clazz)
+    protected Object[] newArray(final Class<?> clazz, final int length)
     {
-        if (Object.class.equals(clazz)) {
-            // Don't actually need to do anything
-            return elements;
-        }
-
-        final Object[] objects = (Object[])Array.newInstance(clazz, elements.length);
-        System.arraycopy(elements, 0, objects, 0, elements.length);
-
+        final Object[] objects = (Object[])Array.newInstance(clazz, length);
         return objects;
+    }
+
+    /**
+     * Locate the named field on the given class.
+     * 
+     * @param baseClass The class.
+     * @param name The field name. If qualified, finds the appropriate field on
+     *            the named superclass; if not qualified, finds the first
+     *            matching field going up the class stack.
+     * @return The field.
+     * @throws NoSuchFieldException If unable to locate the given field.
+     */
+    protected Field findField(final Class<?> baseClass, final String name)
+        throws NoSuchFieldException
+    {
+        Class<?> clazz = baseClass;
+        if (name.indexOf('.') == -1) {
+            do {
+                try {
+                    final Field field = clazz.getDeclaredField(name);
+                    return field;
+                }
+                catch (final NoSuchFieldException nsfe) {
+                    // Keep trying
+                }
+            } while ((clazz = clazz.getSuperclass()) != null);
+
+            throw new NoSuchFieldException("Unable to locate field '" + name + "' on class '" + baseClass.getName() +
+                                           "' or any superclass.");
+        }
+        else {
+            final String cname = name.substring(0, name.lastIndexOf('.'));
+            final String fname = name.substring(name.lastIndexOf('.') + 1);
+            while (null != clazz && !clazz.getName().equals(cname)) {
+                clazz = clazz.getSuperclass();
+            }
+
+            return clazz.getDeclaredField(fname);
+        }
     }
 }

@@ -24,6 +24,7 @@ tokens {
 	MAPTOK = 'map';
 	NIL = 'null';
 	RBRACKET = ']';
+	REFTOK = 'ref';
 	RESPONSETOK = 'response';
 	RPAREN = ')';
 	SHORTTOK = 'T';
@@ -51,6 +52,7 @@ tokens {
 	NUM;
 	NUMDEFAULT;
 	OBJ;
+	REF;
 	RESPONSE;
 	SHORT;
 	STR;
@@ -100,6 +102,7 @@ val
 	| array
 	| collection
 	| map
+	| ref
 	| object
 	| NIL
 	;
@@ -141,13 +144,17 @@ object
 	: ident LPAREN fields RPAREN -> ^(OBJ ident fields)
 	;
 
+ref
+	: REFTOK INTEGER -> ^(REF INTEGER)
+	;
+
 fields
 	: field (COMMA field)* -> ^(FIELDS field field*)
 	| -> ^(FIELDS)
 	;
 
 field
-	: ATOM EQUALS val -> ^(FIELD ATOM val)
+	: ident EQUALS val -> ^(FIELD ident val)
 	;
 
 elements
