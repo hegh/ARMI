@@ -131,8 +131,7 @@ public class ResponseParser
         }
 
         String label = null;
-        String[] path = null;
-        String message = null;
+        Object value = null;
 
         for (final Object childAST : ast.getChildren()) {
             final CommonTree child = (CommonTree)childAST;
@@ -140,18 +139,17 @@ public class ResponseParser
                 case ARMIParser.LABEL:
                     label = label(child);
                     break;
-                case ARMIParser.IDENT:
-                    path = ident(child);
-                    break;
-                case ARMIParser.STR:
-                    message = str(child);
-                    break;
                 default:
-                    throw new SyntaxException("Illegal child of ERROR: " + child.getType());
+                    value = val(child);
+                    break;
             }
         }
 
-        return new ErrorResponse(label, Conversion.arrayToString(path, "."), message);
+        if (null != value && !(value instanceof Throwable)) {
+            throw new SyntaxException("Exception attached to error is not Throwable: " + value.getClass().getName());
+        }
+
+        return new ErrorResponse(label, (Throwable)value);
     }
 
     /**

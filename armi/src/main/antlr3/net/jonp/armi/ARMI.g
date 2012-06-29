@@ -74,7 +74,7 @@ command
 
 response
 	: RESPONSETOK label? LPAREN val RPAREN EOF       -> ^(RESPONSE label? val)
-	| ERRORTOK label? ident LPAREN string RPAREN EOF -> ^(ERROR label? ident string)
+	| ERRORTOK label? LPAREN val RPAREN EOF          -> ^(ERROR label? val)
 	| UNSOLTOK LPAREN ident COMMA val RPAREN EOF     -> ^(UNSOLICITED ident val)
 	;
 

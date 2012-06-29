@@ -1,5 +1,7 @@
 package net.jonp.armi.base.response;
 
+import java.rmi.NotBoundException;
+
 import net.jonp.armi.base.ClassRegistry;
 
 /**
@@ -8,88 +10,45 @@ import net.jonp.armi.base.ClassRegistry;
 public class ErrorResponse
     extends Response
 {
-    private final String exception;
-    private final String message;
+    private final Throwable _exception;
 
     /**
      * Construct a new Error response.
      * 
-     * @param _label The label, or <code>null</code>.
-     * @param _exception The class name of the exception that raised this error.
-     *            The exception must have a constructor matching
-     *            {@link Exception#Exception(String)}. May not be
-     *            <code>null</code>.
-     * @param _message The error message. May not be <code>null</code>.
-     * @throws NullPointerException If <code>_path</code> or
-     *             <code>_message</code> is <code>null</code>.
+     * @param label The label, or <code>null</code>.
+     * @param exception The exception represented by this response.
      */
-    public ErrorResponse(final String _label, final String _exception, final String _message)
+    public ErrorResponse(final String label, final Throwable exception)
     {
-        super(_label);
+        super(label);
 
-        if (_exception == null) {
-            throw new NullPointerException("_exception");
-        }
-
-        if (_message == null) {
-            throw new NullPointerException("_message");
-        }
-
-        exception = _exception;
-        message = _message;
+        _exception = exception;
     }
 
     /**
-     * Get the class name of the exception that raised this error.
+     * Get the exception of this error.
      * 
-     * @return The class name of the exception.
+     * @return The exception.
      */
-    public String getException()
+    public Throwable getException()
     {
-        return exception;
+        return _exception;
     }
 
-    /**
-     * Get the message associated with this error.
-     * 
-     * @return This error's message, or <code>null</code>.
-     */
-    public String getMessage()
-    {
-        return message;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Object#toString()
-     */
     @Override
     public String toString()
     {
-        return String.format("%s[%s]", getException(), getMessage());
+        if (null == getException()) {
+            return String.format("%s", getException());
+        }
+        else {
+            return String.format("%s[%s]", getException().getClass().getSimpleName(), getException().getMessage());
+        }
     }
 
-    /**
-     * A wrapper around {@link #toStatement(ClassRegistry)} that passes
-     * <code>null</code> for the {@link ClassRegistry} argument.
-     * 
-     * @return The statement form of this Error.
-     */
-    public String toStatement()
-    {
-        return toStatement(null);
-    }
-
-    /**
-     * Convert this Error into a legal statement in the command/response
-     * language.
-     * 
-     * @param registry Ignored.
-     * @return The statement.
-     */
     @Override
     public String toStatement(final ClassRegistry registry)
+        throws NotBoundException
     {
         final StringBuilder buf = new StringBuilder();
 
@@ -99,8 +58,7 @@ public class ErrorResponse
             buf.append("label \"").append(getLabel()).append("\" ");
         }
 
-        buf.append(getException()).append(" ");
-        buf.append("(\"").append(getMessage()).append("\")");
+        buf.append("(").append(makeArgument(getException(), registry)).append(")");
 
         return buf.toString();
     }

@@ -4,8 +4,12 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectStreamClass;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.rmi.NotBoundException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -600,19 +604,65 @@ public abstract class AbstractParser
     protected Object newObject(final Class<?> clazz)
         throws SyntaxException
     {
-        final Object instance;
+        final Constructor<?> cons;
         try {
-            instance = clazz.newInstance();
+            cons = clazz.getDeclaredConstructor();
         }
-        catch (final InstantiationException ie) {
-            throw new SyntaxException("Cannot instantiate referenced class " + clazz.getName() + ": " + ie.getMessage(), ie);
-        }
-        catch (final IllegalAccessException iae) {
-            throw new SyntaxException("Cannot access referenced class constructor " + clazz.getName() + ": " + iae.getMessage(),
-                                      iae);
+        catch (final NoSuchMethodException nsme) {
+            // We cannot do this on our own, we need to do a little magic
+            return magicallyDeliciousObject(clazz);
         }
 
-        return instance;
+        cons.setAccessible(true);
+        try {
+            return cons.newInstance();
+        }
+        catch (final IllegalAccessException iae) {
+            throw new IllegalStateException("Illegal access on accessible constructor: " + iae.getMessage(), iae);
+        }
+        catch (final InstantiationException ie) {
+            throw new SyntaxException("Unable to instantiate " + clazz.getName() + ": " + ie.getMessage(), ie);
+        }
+        catch (final InvocationTargetException ite) {
+            throw new SyntaxException("Error instantiating " + clazz.getName() + ": " + ite.getCause().getMessage(), ite.getCause());
+        }
+    }
+
+    /**
+     * Force construction of an object, even if the object does not itself have
+     * a nullary constructor. Requires that the object is {@link Serializable}.
+     * This does some very nasty stuff nearly equivalent to magic.
+     * 
+     * @param clazz The class to instantiate.
+     * @return The instantiated object.
+     * @throws SyntaxException If there was a problem instantiating the class.
+     */
+    protected Object magicallyDeliciousObject(final Class<?> clazz)
+        throws SyntaxException
+    {
+        // XXX: We're about to do something really really bad...
+
+        final ObjectStreamClass osc = ObjectStreamClass.lookupAny(clazz);
+        final Class<?> oscClazz = osc.getClass();
+        final Method m;
+        try {
+            m = oscClazz.getDeclaredMethod("newInstance", (Class<?>[])null);
+        }
+        catch (final NoSuchMethodException nsme) {
+            throw new IllegalStateException("Unable to locate ObjectStreamClass.newInstance(): " + nsme.getMessage(), nsme);
+        }
+
+        m.setAccessible(true);
+        try {
+            return m.invoke(osc);
+        }
+        catch (final IllegalAccessException iae) {
+            throw new IllegalStateException("IllegalAccessException on an accessible Method: " + iae.getMessage(), iae);
+        }
+        catch (final InvocationTargetException ite) {
+            throw new SyntaxException("Exception while instantiating " + clazz.getName() + ": " + ite.getCause().getMessage(),
+                                      ite.getCause());
+        }
     }
 
     /**

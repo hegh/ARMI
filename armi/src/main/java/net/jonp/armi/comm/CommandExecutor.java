@@ -64,23 +64,23 @@ public class CommandExecutor
         }
         catch (final IllegalArgumentException iae) {
             LOG.warn("Failed to call " + command.getObject() + "." + command.getMethod(), iae);
-            response = new ErrorResponse(command.getLabel(), iae.getClass().getName(), iae.getMessage());
+            response = new ErrorResponse(command.getLabel(), iae);
         }
         catch (final IllegalAccessException iae) {
             LOG.warn("Failed to call " + command.getObject() + "." + command.getMethod(), iae);
-            response = new ErrorResponse(command.getLabel(), iae.getClass().getName(), iae.getMessage());
+            response = new ErrorResponse(command.getLabel(), iae);
         }
         catch (final InvocationTargetException ite) {
             LOG.warn("Failed to call " + command.getObject() + "." + command.getMethod(), ite);
-            response = new ErrorResponse(command.getLabel(), ite.getCause().getClass().getName(), ite.getCause().getMessage());
+            response = new ErrorResponse(command.getLabel(), ite);
         }
         catch (final MethodNotFoundException mnfe) {
             LOG.warn("Unable to find method " + command.getObject() + "." + command.getMethod(), mnfe);
-            response = new ErrorResponse(command.getLabel(), mnfe.getClass().getName(), mnfe.getMessage());
+            response = new ErrorResponse(command.getLabel(), mnfe);
         }
         catch (final NotBoundException nbe) {
             LOG.warn("Unable to find object " + command.getObject(), nbe);
-            response = new ErrorResponse(command.getLabel(), nbe.getClass().getName(), nbe.getMessage());
+            response = new ErrorResponse(command.getLabel(), nbe);
         }
 
         return response;
