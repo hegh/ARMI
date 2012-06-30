@@ -59,6 +59,11 @@ public abstract class TestCase
             new SuperclassTestClass(true)
         });
 
+        // 8
+        params.add(new Object[] {
+            new CircularReferenceTestClass(true)
+        });
+
         return params;
     }
 }
