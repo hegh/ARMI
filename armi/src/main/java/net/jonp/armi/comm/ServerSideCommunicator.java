@@ -46,10 +46,24 @@ public interface ServerSideCommunicator
         throws IOException, NotBoundException;
 
     /**
+     * Test whether this {@link ServerSideCommunicator} is closed.
+     * 
+     * @return True if closed, false if open.
+     */
+    public boolean isClosed();
+
+    /**
      * Close this communicator.
      * 
      * @throws IOException If there was a problem.
      */
     public void close()
         throws IOException;
+
+    /**
+     * Get a descriptive name for this server-side communicator.
+     * 
+     * @return A name for the server-side communicator.
+     */
+    public String getServerSideName();
 }

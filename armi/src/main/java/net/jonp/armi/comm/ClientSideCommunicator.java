@@ -46,10 +46,24 @@ public interface ClientSideCommunicator
         throws IOException, SyntaxException;
 
     /**
+     * Test whether this {@link ClientSideCommunicator} is closed.
+     * 
+     * @return True if closed, false if open.
+     */
+    public boolean isClosed();
+
+    /**
      * Close this communicator.
      * 
      * @throws IOException If there was a problem.
      */
     public void close()
         throws IOException;
+
+    /**
+     * Get a descriptive name for this client-side communicator.
+     * 
+     * @return A name for this client-side communicator.
+     */
+    public String getClientSideName();
 }
