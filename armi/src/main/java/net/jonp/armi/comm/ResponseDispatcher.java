@@ -176,6 +176,25 @@ public class ResponseDispatcher
         }
     }
 
+    /**
+     * Get a copy of the registered unsolicited message listeners.
+     * 
+     * @return A copy of the unsolicited registered message listeners. A map of
+     *         the pattern regular expression onto the set of listeners
+     *         registered for that pattern.
+     */
+    public Map<String, Set<UnsolListener>> getUnsolListeners()
+    {
+        final Map<String, Set<UnsolListener>> copy = new HashMap<String, Set<UnsolListener>>();
+        synchronized (unsolListeners) {
+            for (final Map.Entry<String, Set<UnsolListener>> entry : unsolListeners.entrySet()) {
+                copy.put(entry.getKey(), new HashSet<UnsolListener>(entry.getValue()));
+            }
+        }
+
+        return copy;
+    }
+
     @Override
     public void run()
     {
@@ -220,7 +239,7 @@ public class ResponseDispatcher
                 LOG.info("Received an UnsolicitedResponse of type '" + unsol.getType() + "'");
                 fireUnsolicitedResponse(unsol);
             }
-            else {
+            else if (null != response) {
                 LOG.error("Unrecognized response type: " + response.getClass().getName());
             }
         }
