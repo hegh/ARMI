@@ -238,7 +238,7 @@ public class Conversion
     }
 
     /**
-     * Describe an object, which may be <code>null</code> or an arary.
+     * Describe an object, which may be <code>null</code> or an array.
      * 
      * @param object The object.
      * @return A description of the object.
