@@ -11,10 +11,6 @@ import java.rmi.NotBoundException;
 import net.jonp.armi.base.SyntaxException;
 import net.jonp.armi.base.TestCase;
 import net.jonp.armi.base.TestClass;
-import net.jonp.armi.base.command.CallCommand;
-import net.jonp.armi.base.command.Command;
-import net.jonp.armi.base.command.CommandParser;
-import net.jonp.armi.base.command.HelpCommand;
 import net.jonp.armi.comm.DefaultClassRegistry;
 
 import org.junit.Test;
@@ -63,7 +59,6 @@ public class CommandParserTest
         assertEquals(1, callCommand.getArguments().length);
         assertEquals(test, callCommand.getArguments()[0]);
         assertEquals(commandString, callCommand.toStatement(registry));
-        assertEquals(test, callCommand.getArguments()[0]);
         assertEquals(true, ((TestClass)callCommand.getArguments()[0]).isValid());
     }
 
