@@ -118,7 +118,7 @@ public abstract class AbstractChatHandler
             }
 
             // If we already have a response, do not overwrite it
-            if (connected && currentCommand != null) {
+            if (connected) {
                 LOG.debug("Message received from " + getChatterName() + ": " + currentCommand.toString());
                 if (currentCommand instanceof HelpCommand) {
                     LOG.debug("Sending response for HelpCommand");
