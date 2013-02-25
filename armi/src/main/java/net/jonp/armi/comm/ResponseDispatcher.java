@@ -18,6 +18,7 @@ import net.jonp.armi.base.response.ErrorResponse;
 import net.jonp.armi.base.response.Response;
 import net.jonp.armi.base.response.UnsolicitedResponse;
 import net.jonp.armi.base.response.ValueResponse;
+import net.jonp.armi.comm.client.ClientSideCommunicator;
 
 import org.apache.log4j.Logger;
 

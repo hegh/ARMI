@@ -8,6 +8,8 @@ import java.util.Queue;
 import net.jonp.armi.base.ClassRegistry;
 import net.jonp.armi.base.command.Command;
 import net.jonp.armi.base.response.Response;
+import net.jonp.armi.comm.client.ClientSideCommunicator;
+import net.jonp.armi.comm.server.ServerSideCommunicator;
 
 /**
  * Acts as both a {@link ClientSideCommunicator} and a

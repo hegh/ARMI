@@ -1,4 +1,4 @@
-package net.jonp.armi.comm;
+package net.jonp.armi.comm.server;
 
 import java.io.IOException;
 import java.rmi.NotBoundException;

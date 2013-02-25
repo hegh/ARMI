@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import net.jonp.armi.base.response.UnsolicitedResponse;
 import net.jonp.armi.comm.DefaultClassRegistry;
-import net.jonp.armi.comm.ServerSideCommunicator;
+import net.jonp.armi.comm.server.ServerSideCommunicator;
 import net.jonp.armi.example.api.ChatMessage;
 import net.jonp.armi.example.api.Chatter;
 import net.jonp.armi.example.api.NameChange;

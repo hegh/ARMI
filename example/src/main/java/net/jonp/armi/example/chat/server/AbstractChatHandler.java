@@ -12,8 +12,8 @@ import net.jonp.armi.base.response.ErrorResponse;
 import net.jonp.armi.base.response.Response;
 import net.jonp.armi.comm.CommandExecutor;
 import net.jonp.armi.comm.DefaultClassRegistry;
-import net.jonp.armi.comm.ServerSideCommunicator;
 import net.jonp.armi.comm.SimpleRegistry;
+import net.jonp.armi.comm.server.ServerSideCommunicator;
 
 import org.apache.log4j.Logger;
 

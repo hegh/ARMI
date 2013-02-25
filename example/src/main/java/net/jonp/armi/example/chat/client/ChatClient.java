@@ -26,6 +26,7 @@ import javax.swing.WindowConstants;
 import net.jonp.armi.comm.DefaultClassRegistry;
 import net.jonp.armi.comm.ResponseDispatcher;
 import net.jonp.armi.comm.UnsolListener;
+import net.jonp.armi.comm.client.ClientSideSocketCommunicator;
 import net.jonp.armi.example.api.ChatMessage;
 import net.jonp.armi.example.api.Chatter;
 import net.jonp.armi.example.api.NameChange;
@@ -41,7 +42,7 @@ public class ChatClient
 {
     static final Logger LOG = Logger.getLogger(ChatClient.class);
 
-    final SocketCommunicator _comm;
+    final ClientSideSocketCommunicator _comm;
     private final ResponseDispatcher _dispatcher;
     final ClientAPI _api;
 
@@ -58,7 +59,7 @@ public class ChatClient
         classRegistry.put(NameChange.class.getSimpleName(), NameChange.class);
         classRegistry.put(Chatter.class.getSimpleName(), Chatter.class);
 
-        _comm = new SocketCommunicator(sock, classRegistry);
+        _comm = new ClientSideSocketCommunicator(sock, classRegistry);
 
         _dispatcher = new ResponseDispatcher(_comm);
         _api = new ClientAPI(_dispatcher);

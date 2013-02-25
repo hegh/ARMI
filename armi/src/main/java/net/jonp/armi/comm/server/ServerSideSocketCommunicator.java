@@ -1,4 +1,4 @@
-package net.jonp.armi.example.chat.client;
+package net.jonp.armi.comm.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,18 +8,17 @@ import java.rmi.NotBoundException;
 import net.jonp.armi.base.ClassRegistry;
 import net.jonp.armi.base.SyntaxException;
 import net.jonp.armi.base.command.Command;
+import net.jonp.armi.base.command.CommandParser;
 import net.jonp.armi.base.response.Response;
-import net.jonp.armi.base.response.ResponseParser;
-import net.jonp.armi.comm.ClientSideCommunicator;
 
 /**
- * A {@link ClientSideCommunicator} that works over a {@link Socket}.
+ * A {@link ServerSideCommunicator} that works over a {@link Socket}.
  */
-public class SocketCommunicator
-    implements ClientSideCommunicator
+public class ServerSideSocketCommunicator
+    implements ServerSideCommunicator
 {
     private final Socket _sock;
-    private final ResponseParser _parser;
+    private final CommandParser _parser;
     private final OutputStream _responseStream;
 
     /**
@@ -29,12 +28,12 @@ public class SocketCommunicator
      * @param registry The class registry.
      * @throws IOException If there was a problem setting up communications.
      */
-    public SocketCommunicator(final Socket sock, final ClassRegistry registry)
+    public ServerSideSocketCommunicator(final Socket sock, final ClassRegistry registry)
         throws IOException
     {
         _sock = sock;
         _responseStream = _sock.getOutputStream();
-        _parser = new ResponseParser(_sock.getInputStream(), registry);
+        _parser = new CommandParser(_sock.getInputStream(), registry);
     }
 
     /**
@@ -61,20 +60,21 @@ public class SocketCommunicator
     }
 
     @Override
-    public Response readNextResponse()
+    public Command readNextCommand()
         throws IOException, SyntaxException
     {
-        return _parser.readNextResponse();
+        return _parser.readNextCommand();
     }
 
     @Override
-    public void sendCommand(final Command command)
+    public void sendResponse(final Response response)
         throws IOException, NotBoundException
     {
-        _responseStream.write(command.toStatement(getClassRegistry()).getBytes());
+        _responseStream.write(response.toStatement(getClassRegistry()).getBytes());
         _responseStream.write('\n');
         _responseStream.flush();
     }
+
 
     @Override
     public boolean isClosed()
@@ -83,7 +83,7 @@ public class SocketCommunicator
     }
 
     @Override
-    public String getClientSideName()
+    public String getServerSideName()
     {
         return _sock.getInetAddress().getHostName();
     }

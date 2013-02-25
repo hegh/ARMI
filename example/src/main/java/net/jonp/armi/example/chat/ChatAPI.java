@@ -6,8 +6,8 @@ import java.rmi.RemoteException;
 import java.util.concurrent.TimeoutException;
 
 import net.jonp.armi.base.command.CallCommand;
-import net.jonp.armi.comm.ClientSideCommunicator;
 import net.jonp.armi.comm.ResponseDispatcher;
+import net.jonp.armi.comm.client.ClientSideCommunicator;
 import net.jonp.armi.example.api.Chatter;
 
 

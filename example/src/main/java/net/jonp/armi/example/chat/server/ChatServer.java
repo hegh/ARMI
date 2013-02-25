@@ -14,6 +14,7 @@ import java.util.Set;
 
 import net.jonp.armi.base.response.UnsolicitedResponse;
 import net.jonp.armi.comm.DefaultClassRegistry;
+import net.jonp.armi.comm.server.ServerSideSocketCommunicator;
 import net.jonp.armi.example.api.ChatMessage;
 import net.jonp.armi.example.chat.Shared;
 
@@ -149,7 +150,7 @@ public class ChatServer
 
                 LOG.info("New connection received, starting ChatHandler " + name);
 
-                final ChatHandler client = new ChatHandler(new SocketCommunicator(sock, new DefaultClassRegistry()), name, this);
+                final ChatHandler client = new ChatHandler(new ServerSideSocketCommunicator(sock, new DefaultClassRegistry()), name, this);
                 synchronized (_clients) {
                     _clients.add(client);
                 }
