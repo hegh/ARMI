@@ -5,3 +5,6 @@ TODO:
    ObjectStreamClass to make it work correctly, without violating any license terms
    or other access controls.
 
+ * Add test cases for the Client- and Server-side socket communicators, now that
+   they are in the core library.
+
