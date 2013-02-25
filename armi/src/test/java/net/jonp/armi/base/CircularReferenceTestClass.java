@@ -18,9 +18,6 @@ public class CircularReferenceTestClass
 
     public static final String COMMAND = "CircularTestObject (" +
                                          //
-                                         CircularReferenceTestClass.class.getName() +
-                                         ".circularfield = ref 0, " +
-                                         //
                                          CircularReferenceTestClass.class.getName() + ".circulararray = array(" +
                                          CircularReferenceTestClass.class.getName() +
                                          ") [ref 0], " +
@@ -28,8 +25,10 @@ public class CircularReferenceTestClass
                                          CircularReferenceTestClass.class.getName() +
                                          ".circularcollection = collection(java.util.ArrayList) [ref 0], " +
                                          //
+                                         CircularReferenceTestClass.class.getName() + ".circularfield = ref 0, " +
+                                         //
                                          CircularReferenceTestClass.class.getName() +
-                                         ".circularmap = map(java.util.HashMap) [ref 0 = ref 0])";
+                                         ".circularmap = map(java.util.HashMap) [\"HashKey\" = ref 0])";
 
     // We cannot do much with toString() because it would cause a
     // StackOverflowError, so we don't bother
@@ -38,7 +37,7 @@ public class CircularReferenceTestClass
     public CircularReferenceTestClass circularfield;
     public CircularReferenceTestClass[] circulararray;
     public List<CircularReferenceTestClass> circularcollection;
-    public Map<CircularReferenceTestClass, CircularReferenceTestClass> circularmap;
+    public Map<String, CircularReferenceTestClass> circularmap;
 
     public CircularReferenceTestClass()
     {
@@ -56,8 +55,8 @@ public class CircularReferenceTestClass
             circularcollection = new ArrayList<CircularReferenceTestClass>();
             circularcollection.add(this);
 
-            circularmap = new HashMap<CircularReferenceTestClass, CircularReferenceTestClass>();
-            circularmap.put(this, this);
+            circularmap = new HashMap<String, CircularReferenceTestClass>();
+            circularmap.put("HashKey", this);
         }
     }
 
@@ -82,7 +81,7 @@ public class CircularReferenceTestClass
     @Override
     public int hashCode()
     {
-        // We don't actually have any data that can be hashed
+        // Nothing worth hashing
         return 0;
     }
 
@@ -97,7 +96,9 @@ public class CircularReferenceTestClass
 
             // Cannot use Arrays.equals or similar because they would throw a
             // StackOverflowError
-            return (circularfield == rhs.circularfield && //
+            // Cannot use reference equals because we are probably comparing
+            // object pre- and post-serialization
+            return (fieldsAreEqual(circularfield, rhs.circularfield) && //
                     arraysAreEqual(circulararray, rhs.circulararray) && //
                     listsAreEqual(circularcollection, rhs.circularcollection) && //
             mapsAreEqual(circularmap, rhs.circularmap));
@@ -119,6 +120,19 @@ public class CircularReferenceTestClass
         return String.format("%s()", getClass().getSimpleName());
     }
 
+    private boolean fieldsAreEqual(final CircularReferenceTestClass lhs, final CircularReferenceTestClass rhs)
+    {
+        if (null == lhs && null == rhs) {
+            return true;
+        }
+        else if (null == lhs || null == rhs) {
+            return false;
+        }
+        else {
+            return lhs.getClass().equals(rhs.getClass());
+        }
+    }
+
     private boolean arraysAreEqual(final CircularReferenceTestClass[] lhs, final CircularReferenceTestClass[] rhs)
     {
         if (null == lhs && null == rhs) {
@@ -132,7 +146,7 @@ public class CircularReferenceTestClass
         }
         else {
             for (int i = 0; i < lhs.length; i++) {
-                if (lhs[i] != rhs[i]) {
+                if (!fieldsAreEqual(lhs[i], rhs[i])) {
                     return false;
                 }
             }
@@ -155,8 +169,8 @@ public class CircularReferenceTestClass
         }
     }
 
-    private boolean mapsAreEqual(final Map<CircularReferenceTestClass, CircularReferenceTestClass> lhs,
-                                 final Map<CircularReferenceTestClass, CircularReferenceTestClass> rhs)
+    private boolean mapsAreEqual(final Map<String, CircularReferenceTestClass> lhs,
+                                 final Map<String, CircularReferenceTestClass> rhs)
     {
         if (null == lhs && null == rhs) {
             return true;
@@ -168,8 +182,13 @@ public class CircularReferenceTestClass
             return false;
         }
         else {
-            for (final Map.Entry<CircularReferenceTestClass, CircularReferenceTestClass> entry : lhs.entrySet()) {
-                if (rhs.get(entry.getKey()) != entry.getValue()) {
+
+            for (final Map.Entry<String, CircularReferenceTestClass> entry : lhs.entrySet()) {
+                final String key = entry.getKey();
+                final CircularReferenceTestClass lhsval = entry.getValue();
+                final CircularReferenceTestClass rhsval = rhs.get(key);
+
+                if (!fieldsAreEqual(lhsval, rhsval)) {
                     return false;
                 }
             }
