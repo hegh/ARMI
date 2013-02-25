@@ -1,3 +1,7 @@
 TODO:
- * Add an example project (a chat client/server would probably be a good choice)
+ * Get rid of AbstractParser.magicallyDeliciousObject(), as it is really really bad
+   (it bypasses Java access controls to call java.io.ObjectStreamClass.newInstance(),
+   which has default visibility). Need to find a way to duplicate the rest of
+   ObjectStreamClass to make it work correctly, without violating any license terms
+   or other access controls.
 
