@@ -117,7 +117,7 @@ public class CircularReferenceTestClass
     @Override
     public String toString()
     {
-        return String.format("%s()", getClass().getSimpleName());
+        return STRING;
     }
 
     private boolean fieldsAreEqual(final CircularReferenceTestClass lhs, final CircularReferenceTestClass rhs)
