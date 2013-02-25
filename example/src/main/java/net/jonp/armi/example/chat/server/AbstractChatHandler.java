@@ -102,10 +102,10 @@ public abstract class AbstractChatHandler
             try {
                 currentCommand = client.readNextCommand();
 
-                // FIXME: This returns EOF if the client sends a blank line
                 if (currentCommand == null) {
-                    LOG.warn("EOF from client, disconnecting");
-                    disconnect();
+                    // On EOF, the communicator would have thrown an
+                    // EOFException
+                    continue;
                 }
             }
             catch (final SyntaxException se) {

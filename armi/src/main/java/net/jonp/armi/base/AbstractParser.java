@@ -79,7 +79,11 @@ public abstract class AbstractParser
     protected void parserSetup()
         throws IOException
     {
-        final String line = in.readLine();
+        String line;
+        do {
+            line = in.readLine();
+        } while (line != null && line.trim().isEmpty());
+
         if (line == null) {
             throw new EOFException();
         }
